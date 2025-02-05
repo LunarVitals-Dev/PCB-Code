@@ -39,7 +39,7 @@ void i2c_init(void) {
 }
 
 void i2c_read_data() {
-    read_mpu6050_data(i2c_dev0);
+    //read_mpu6050_data(i2c_dev0);
     //read_mlx90614_data(i2c_dev0);
     //read_bmp280_data(i2c_dev1);
    

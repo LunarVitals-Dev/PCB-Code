@@ -17,13 +17,13 @@
 
 
 /* ADC buffer and sequence configuration */
-static int16_t buf[NUMOFADCCHANNELS];  // Store multiple readings
-
+static int16_t buf;
 static struct adc_sequence sequence = {
-    .buffer = buf,  // No need for `&buf[i]`, just use `buf`
-    .buffer_size = sizeof(buf),
+    .buffer = &buf,
+    .buffer_size = sizeof(buf), 
+    /* Optional calibration */
+    //.calibrate = true,
 };
-
 
 int32_t convert_to_mv(int16_t raw_value) {
     return (int32_t)((raw_value * ADC_REF_VOLTAGE_MV * (1.0 / ADC_GAIN)) / ADC_RESOLUTION);
@@ -53,6 +53,7 @@ void adc_init(){
 		}
 	}
 }
+
 void get_adc_data() {
     char message[200];
     int message_offset = 0;  
@@ -62,33 +63,20 @@ void get_adc_data() {
 
     for (int i = 0; i < NUMOFADCCHANNELS; i++) {
         const struct adc_dt_spec *adc_channel = &adc_channels[i];
-        printf("🔍 Channel %d -> Dev: %s, Pin: %d, Resolution: %d\n",
-               i,
-               adc_channel->dev->name,
-               adc_channel->channel_id, 
-               adc_channel->resolution);
-        // Configure sequence for single-channel read
-        sequence.buffer = &buf[i];  
-        sequence.buffer_size = sizeof(buf[i]);  
 
-        printf("Reading ADC channel %d (Pin: %s)...\n", i, adc_channel->dev->name);
-
-        // Read ADC data
+                // Update the ADC sequence to select only this channel
+        sequence.channels = BIT(adc_channel->channel_id); 
+        // Read ADC data for the current channel
         int err1 = adc_read(adc_channel->dev, &sequence);
         if (err1 < 0) {
-            printf("❌ ADC read failed for channel %d (Error %d)\n", i, err1);
+            printf("ADC read failed for channel %d (%d)\n", i, err1);
         } else {
-            // Print raw ADC value
-            printf("✅ ADC raw value for channel %d: %d\n", i, buf[i]);
-
-            // Convert raw ADC value to millivolts
-            int32_t val_mv = convert_to_mv(buf[i]);  
-            printf("🔹 Converted value (mV) for channel %d: %d\n", i, val_mv);
-
+            // Convert the raw value to millivolts
+            int32_t val_mv = convert_to_mv(buf);
+            
             // Get the current uptime in milliseconds
             uint32_t timestamp = k_uptime_get();
-            printf("⏱️ Timestamp: %d ms\n", timestamp);
-
+            
             // Append to JSON message
             if (i == 0) {
                 message_offset += snprintf(
@@ -105,8 +93,7 @@ void get_adc_data() {
             }
         }
     }
-
-    // Remove trailing comma and close JSON object
+     // Remove trailing comma and close JSON object
     if (message_offset > 1) {
         message[message_offset - 1] = '\0'; // Remove last comma
     }
@@ -119,88 +106,3 @@ void get_adc_data() {
     // Send the message over Bluetooth
     send_message_to_bluetooth(message);
 }
-
-
-// void get_adc_data() {
-
-//     char message[200];
-//     int message_offset = 0;   // Track the position in the message string
-
-//     message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
-//     for (int i = 0; i < NUMOFADCCHANNELS; i++) {
-//         const struct adc_dt_spec *adc_channel = &adc_channels[i];
-        
-//         // Read ADC data for the current channel
-//         int err1 = adc_read(adc_channel->dev, &sequence);
-//         if (err1 < 0) {
-//             printf("ADC read failed for channel %d (%d)\n", i, err1);
-//         } else {
-//             // Convert the raw value to millivolts
-//             int32_t val_mv = convert_to_mv(buf);
-            
-//             // Get the current uptime in milliseconds
-//             uint32_t timestamp = k_uptime_get();
-            
-//             // Format the message to send via Bluetooth
-//             //char message[50];
-//             //snprintf(message, sizeof(message), "Channel %d: %d mV, Timestamp: %u\r\n", i, val_mv, timestamp);
-//             //printf(message);
-//             // Send the message over Bluetooth
-//             //send_message_to_bluetooth(message);
-            
-//             if (i == 0) {
-//                 message_offset += snprintf(
-//                     message + message_offset, sizeof(message) - message_offset,
-//                     "\"RespiratoryRate\": {\"Value_mV\": %d},",
-//                     val_mv
-//                 );
-//             } else if (i == 1) {
-//                 message_offset += snprintf(
-//                     message + message_offset, sizeof(message) - message_offset,
-//                     "\"PulseSensor\": {\"Value_mV\": %d},",
-//                     val_mv
-//                 );
-//             }
-//         }
-//     }
-//       // Remove the trailing comma and close the JSON object
-//     if (message_offset > 1) {
-//         message[message_offset - 1] = '\0'; // Replace last comma with null terminator
-//     }
-//     strcat(message, "}");
-//     //printf("%s\n", message); // Print JSON string
-//     send_message_to_bluetooth(message);
-// }
-
-// void get_adc_data(char *buffer, size_t size) {
-//     for (int i = 0; i < NUMOFADCCHANNELS; i++) {
-//         const struct adc_dt_spec *adc_channel = &adc_channels[i];
-
-//         // Read ADC data for the current channel
-//         int err = adc_read(adc_channel->dev, &sequence);
-//         if (err < 0) {
-//             snprintf(buffer, size, "\"Channel%d\": {\"Error\": \"ADC read failed (%d)\"}", i, err);
-//         } else {
-//             // Convert the raw value to millivolts
-//             int32_t val_mv = convert_to_mv(buf);
-
-//             // Get the current uptime in milliseconds
-//             uint32_t timestamp = k_uptime_get();
-
-//             // Format the JSON output for this channel
-//             snprintf(buffer, size,
-//                      "\"Channel%d\": {\"Value\": %d, \"Timestamp\": %u}",
-//                      i, val_mv, timestamp);
-//         }
-
-//         // Move the buffer pointer forward for the next channel
-//         size_t written = strlen(buffer);
-//         buffer += written;
-//         size -= written;
-
-//         // Add a comma for separation, except after the last entry
-//         if (i < NUMOFADCCHANNELS - 1) {
-//             strncat(buffer, ",", size - 1);
-//         }
-//     }
-// }

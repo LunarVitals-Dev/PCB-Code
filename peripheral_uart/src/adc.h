@@ -40,14 +40,8 @@
 static const struct adc_dt_spec adc_channels[NUMOFADCCHANNELS] = {
     ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 0), // Channel 0
     ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 1), // Channel 1
-    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 2), // Channel 2
-    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 3), // Channel 3
-    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 4), // Channel 4
-    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 5), // Channel 5
-    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 6), // Channel 6
-    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 7), // Channel 7
 };
 int32_t convert_to_mv(int16_t raw_value);
 void adc_init();
-void get_adc_data();
+
 #endif
