@@ -19,6 +19,7 @@ target_sources(app PRIVATE
   src/MPU6050.c
   src/MAX30102.c
   src/heart_rate.c
+  src/spo2_algorithm.c
 )
 
 # # NORDIC SDK APP START

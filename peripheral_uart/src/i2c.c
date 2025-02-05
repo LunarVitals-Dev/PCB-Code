@@ -53,7 +53,7 @@ bool d_i2c_is_ready(const struct i2c_dt_spec *i2c_dev) {
     }
 }
 
-bool d_i2c_write_byte(const struct i2c_dt_spec *i2c_dev, uint8_t address, uint8_t data)
+bool d_i2c_write_to_reg(const struct i2c_dt_spec *i2c_dev, uint8_t address, uint8_t data)
 {
 	int ret;
 	ret = i2c_reg_write_byte_dt(i2c_dev, address, data);
@@ -87,3 +87,26 @@ bool d_i2c_read_registers(const struct i2c_dt_spec *i2c_dev, uint8_t reg_addr, u
         return true;
     }
 }
+
+bool d_i2c_read(const struct i2c_dt_spec *i2c_dev, uint8_t *data, size_t len) {
+    int ret = i2c_read_dt(i2c_dev, data, len);
+    if (ret < 0) {
+        printk("Failed to read %d bytes\n", len);
+        return false;
+    } else {
+        if(REPORT_SUCCESS) printk("Read %d bytes\n", len);
+        return true;
+    }
+}
+
+bool d_i2c_write(const struct i2c_dt_spec *i2c_dev, const uint8_t *data, size_t len) {
+    int ret = i2c_write_dt(i2c_dev, data, len);
+    if (ret < 0) {
+        printk("Failed to write %d bytes\n", len);
+        return false;
+    } else {
+        if(REPORT_SUCCESS) printk("Wrote %d bytes\n", len);
+        return true;
+    }
+}
+    

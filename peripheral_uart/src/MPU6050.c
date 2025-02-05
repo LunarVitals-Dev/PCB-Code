@@ -9,7 +9,7 @@
 // Step detection configuration
 #define WINDOW_SIZE         10   // Moving average window size
 #define STEP_THRESHOLD     0.08f  // Minimum acceleration magnitude to register as step
-#define STEP_COOLDOWN_MS   250  // Minimum time between steps
+#define STEP_COOLDOWN_MS   500  // Minimum time between steps
 #define GYRO_STEP_THRESHOLD 1.5f // Gyroscope threshold for step detection
 
 // Step counter structure
@@ -42,7 +42,7 @@ static void init_step_counter(void) {
 }
 
 // Process acceleration data for step counting
-static void process_step_detection(float accel_x, float accel_y, float accel_z, float gyro_y, float gyro_z) {
+static int process_step_detection(float accel_x, float accel_y, float accel_z, float gyro_y, float gyro_z) {
     // Remove gravity using a high-pass filter approximation
     float magnitude = fabsf(sqrtf(
         accel_x * accel_x + 
@@ -69,10 +69,12 @@ static void process_step_detection(float accel_x, float accel_y, float accel_z, 
         (current_time - step_counter.last_step_time) > STEP_COOLDOWN_MS) {
         step_counter.step_count++;
         step_counter.last_step_time = current_time;
-        printk("Total steps: %d\n", step_counter.step_count);
+        //printk("Total steps: %d\n", step_counter.step_count);
+       
     }
     
     step_counter.buffer_index = (step_counter.buffer_index + 1) % WINDOW_SIZE;
+    return step_counter.step_count;
 }
 
 void mpu6050_init(const struct device *i2c_dev) {
@@ -102,7 +104,10 @@ void read_mpu6050_data(const struct device *i2c_dev) {
     int16_t accel_x, accel_y, accel_z;
     int16_t gyro_x, gyro_y, gyro_z;
     uint8_t data[6];
-
+    char message[300];
+    int message_offset = 0;
+    // Start JSON object
+    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
     // Read accelerometer data (6 bytes)
     if (i2c_read_registers(i2c_dev, MPU6050_ADDR, ACCEL_XOUT_H, data, 6) == 0) {
         accel_x = (int16_t)((data[0] << 8) | data[1]);
@@ -113,8 +118,12 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         step_counter.accel_y = (float)accel_y / 16384.0f;
         step_counter.accel_z = (float)accel_z / 16384.0f;
 
-        printk("Accelerometer (g): X=%.2f, Y=%.2f, Z=%.2f\n", 
-               step_counter.accel_x, step_counter.accel_y, step_counter.accel_z);
+        //printk("Accelerometer (g): X=%.2f, Y=%.2f, Z=%.2f\n", step_counter.accel_x, step_counter.accel_y, step_counter.accel_z);
+        message_offset += snprintf(
+            message + message_offset, sizeof(message) - message_offset,
+            "\"Accelerometer\": {\"X_g\": %.4f, \"Y_g\": %.4f, \"Z_g\": %.4f},",
+            step_counter.accel_x, step_counter.accel_y, step_counter.accel_z
+        );
     } else {
         printk("Failed to read accelerometer data\n");
     }
@@ -128,13 +137,31 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         step_counter.gyro_x = (float)gyro_x / 131.0f;
         step_counter.gyro_y = (float)gyro_y / 131.0f;
         step_counter.gyro_z = (float)gyro_z / 131.0f;
+        int steps = process_step_detection(step_counter.accel_x, step_counter.accel_y, step_counter.accel_z, step_counter.gyro_y, step_counter.gyro_z);
 
-        printk("Gyroscope (°/s): X=%.2f, Y=%.2f, Z=%.2f\n", 
-               step_counter.gyro_x, step_counter.gyro_y, step_counter.gyro_z);
-        process_step_detection(step_counter.accel_x, step_counter.accel_y, step_counter.accel_z, step_counter.gyro_y, step_counter.gyro_z);
+        // printk("Gyroscope (°/s): X=%.2f, Y=%.2f, Z=%.2f\n", 
+        //        step_counter.gyro_x, step_counter.gyro_y, step_counter.gyro_z);
+
+        message_offset += snprintf(
+            message + message_offset, sizeof(message) - message_offset,
+            "\"Gyroscope\": {{\"X_deg_per_s\": %.2f, \"Y_deg_per_s\": %.2f, \"Z_deg_per_s\": %.2f}, {\"steps\": %d}},",
+            step_counter.gyro_x, step_counter.gyro_y,step_counter.gyro_z, steps
+        );
+       
+        
     } else {
         printk("Failed to read gyroscope data\n");
     }
+
+    // Remove trailing comma if necessary and close JSON object
+    if (message_offset > 1 && message[message_offset - 1] == ',') {
+        message[message_offset - 1] = '\0'; // Replace last comma with null terminator
+    }
+    strcat(message, "}]");
+    printf("%s\n", message);
+    // Print or send JSON message
+    //printf("%s\n", message);
+    send_message_to_bluetooth(message);
     // Process acceleration and gyroscope data for step detection
 }
 

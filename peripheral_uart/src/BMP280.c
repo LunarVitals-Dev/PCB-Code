@@ -58,6 +58,9 @@ void bmp280_init(const struct device *i2c_dev) {
 
 void read_bmp280_data(const struct device *i2c_dev) {
     uint8_t data[6];
+    char message[200];
+    int message_offset = 0;
+
 
     if (i2c_read_registers(i2c_dev, BMP280_ADDR, BMP280_REG_PRESSURE_MSB, data, sizeof(data)) != 0) {
         printk("Error: Failed to read BMP280 data\n");
@@ -74,7 +77,7 @@ void read_bmp280_data(const struct device *i2c_dev) {
     int32_t var2 = (((((adc_T >> 4) - ((int32_t)dig_T1)) * ((adc_T >> 4) - ((int32_t)dig_T1))) >> 12) * ((int32_t)dig_T3)) >> 14;
     t_fine = var1 + var2;
     float celsius = ((t_fine * 5 + 128) >> 8) / 100.0f;
-
+    float fahrenheit = (celsius * 1.8f) + 32.0f;
     // Pressure compensation
     int64_t var1_p = ((int64_t)t_fine) - 128000;
     int64_t var2_p = var1_p * var1_p * (int64_t)dig_P6 + ((var1_p * (int64_t)dig_P5) << 17) + (((int64_t)dig_P4) << 35);
@@ -93,5 +96,19 @@ void read_bmp280_data(const struct device *i2c_dev) {
 
     float pressure = p / 25600.0f;  // Convert to hPa
 
-    printk("Temperature: %.2f °C, Pressure: %.2f hPa\n", celsius, pressure);
+    // Create JSON message
+    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
+    message_offset += snprintf(
+        message + message_offset, sizeof(message) - message_offset,
+        "\"Temperature\": {\"Celsius\": %.2f, \"Fahrenheit\": %.2f},",
+        celsius, fahrenheit
+    );
+    message_offset += snprintf(
+        message + message_offset, sizeof(message) - message_offset,
+        "\"Pressure\": {\"hPa\": %.2f}",
+        pressure
+    );
+    strcat(message, "}]");
+    printf("%s\n", message);
+    send_message_to_bluetooth(message);
 }

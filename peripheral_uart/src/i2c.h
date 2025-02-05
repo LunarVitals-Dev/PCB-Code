@@ -19,8 +19,10 @@ void i2c_init(void);
 void i2c_read_data(void);
 
 bool d_i2c_is_ready(const struct i2c_dt_spec *i2c_dev);
-bool d_i2c_write_byte(const struct i2c_dt_spec *i2c_dev, uint8_t address, uint8_t data);
+bool d_i2c_write_to_reg(const struct i2c_dt_spec *i2c_dev, uint8_t address, uint8_t data);
 bool d_i2c_read_register(const struct i2c_dt_spec *i2c_dev, uint8_t reg_addr, uint8_t *data);
 bool d_i2c_read_registers(const struct i2c_dt_spec *i2c_dev, uint8_t reg_addr, uint8_t *data, size_t len);
+bool d_i2c_read(const struct i2c_dt_spec *i2c_dev, uint8_t *data, size_t len);
+bool d_i2c_write(const struct i2c_dt_spec *i2c_dev, const uint8_t *data, size_t len);
 
 #endif

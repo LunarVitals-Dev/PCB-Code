@@ -840,21 +840,25 @@ int main(void)
 
 	//----------------------
 	    /* Verify ADC readiness */
-    	adc_init();
+    adc_init();
 	i2c_init();
 	max30102_default_setup(&dev_max30102);
 	//-------------------------
     // Main loop to blink LED to indicate status
+	int counter = 0;
     for (;;) {
 		
-
-		get_adc_data();
-		i2c_read_data();
-	    	max30102_print_data();
+		if (counter == 0){
+			get_adc_data();
+			i2c_read_data();
+		}
+		max30102_read_data_hr(&dev_max30102);
 
         dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		
-        k_sleep(K_MSEC(100));
+        k_sleep(K_MSEC(10));
+		counter += 1;
+		counter = counter % 10;
     }
 
 }
