@@ -1,0 +1,106 @@
+#include <zephyr/device.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/kernel.h>
+#include "mlx90614.h"
+#include "i2c.h"
+
+int read_mlx90614_register(const struct device *i2c_dev, uint8_t reg_addr, uint16_t *data) {
+    uint8_t buffer[3];
+    int ret = i2c_write_read(i2c_dev, MLX90614_ADDR, &reg_addr, 1, buffer, 3);
+    if (ret < 0) {
+        return ret;
+    }
+    *data = (buffer[0] | (buffer[1] << 8)); // Combine high and low byte
+    return 0;
+}
+
+// void read_mlx90614_data(const struct device *i2c_dev) {
+//     uint16_t ambient_temp_raw, object_temp_raw;
+//     float ambient_temp, object_temp;
+
+//     // Read ambient temperature
+//     if (read_mlx90614_register(i2c_dev, MLX90614_TA, &ambient_temp_raw) == 0) {
+//         ambient_temp = ambient_temp_raw * 0.02 - 273.15; // Convert to Celsius
+//         printk("Ambient Temperature: %.2f °C\n", ambient_temp);
+//     } else {
+//         printk("Failed to read ambient temperature\n");
+//     }
+
+//     // Read object temperature
+//     if (read_mlx90614_register(i2c_dev, MLX90614_TOBJ1, &object_temp_raw) == 0) {
+//         object_temp = object_temp_raw * 0.02 - 273.15; // Convert to Celsius
+//         printk("Object Temperature: %.2f °C\n", object_temp);
+//     } else {
+//         printk("Failed to read object temperature\n");
+//     }
+// }
+void read_mlx90614_data(const struct device *i2c_dev) {
+    uint16_t ambient_temp_raw, object_temp_raw;
+    float ambient_temp = 0.0, object_temp = 0.0;
+    char message[200];
+    int message_offset = 0;
+
+    // Start JSON object
+    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
+
+    // Read ambient temperature
+    if (read_mlx90614_register(i2c_dev, MLX90614_TA, &ambient_temp_raw) == 0) {
+        ambient_temp = ambient_temp_raw * 0.02 - 273.15; // Convert to Celsius
+        message_offset += snprintf(
+            message + message_offset, sizeof(message) - message_offset,
+            "\"AmbientTemperature\": {\"Celsius\": %.2f},",
+            ambient_temp
+        );
+    } else {
+        printk("Failed to read ambient temperature\n");
+    }
+
+    // Read object temperature
+    if (read_mlx90614_register(i2c_dev, MLX90614_TOBJ1, &object_temp_raw) == 0) {
+        object_temp = object_temp_raw * 0.02 - 273.15; // Convert to Celsius
+        message_offset += snprintf(
+            message + message_offset, sizeof(message) - message_offset,
+            "\"ObjectTemperature\": {\"Celsius\": %.2f},",
+            object_temp
+        );
+    } else {
+        printk("Failed to read object temperature\n");
+    }
+
+    // Remove trailing comma if necessary and close JSON object
+    if (message_offset > 1 && message[message_offset - 1] == ',') {
+        message[message_offset - 1] = '\0'; // Replace last comma with null terminator
+    }
+    strcat(message, "}]");
+
+    // Print or send JSON message
+    printf("%s\n", message);
+    send_message_to_bluetooth(message);
+    // send_message_to_bluetooth(message);  // Uncomment if Bluetooth transmission is implemented
+}
+
+// void read_mlx90614_data(const struct device *i2c_dev, char *buffer, size_t size) {
+//     uint16_t ambient_temp_raw, object_temp_raw;
+
+//     // Read ambient temperature
+//     if (read_mlx90614_register(i2c_dev, MLX90614_TA, &ambient_temp_raw) != 0) {
+//         snprintf(buffer, size, "\"MLX90614\": {\"Error\": \"Failed to read ambient temperature\"}");
+//         return;
+//     }
+
+//     // Read object temperature
+//     if (read_mlx90614_register(i2c_dev, MLX90614_TOBJ1, &object_temp_raw) != 0) {
+//         snprintf(buffer, size, "\"MLX90614\": {\"Error\": \"Failed to read object temperature\"}");
+//         return;
+//     }
+
+//     // Convert raw values to Celsius
+//     float ambient_temp = ambient_temp_raw * 0.02 - 273.15;
+//     float object_temp = object_temp_raw * 0.02 - 273.15;
+
+//     // Format the JSON object
+//     snprintf(buffer, size,
+//              "\"MLX90614\": {\"AmbientTemperature\": %.2f, \"ObjectTemperature\": %.2f}",
+//              ambient_temp, object_temp);
+// }
