@@ -1,53 +1,16 @@
-/*
- * Copyright (c) 2018 Nordic Semiconductor ASA
- *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
- */
-
-/** @file
- *  @brief Nordic UART Bridge Service (NUS) sample
- */
-// #include <uart_async_adapter.h>
-
-// #include <zephyr/types.h>
-// #include <zephyr/kernel.h>
-// #include <zephyr/drivers/uart.h>
-// #include <zephyr/usb/usb_device.h>
-
-// #include <zephyr/device.h>
-// #include <zephyr/devicetree.h>
-// #include <soc.h>
-
-// #include <zephyr/bluetooth/bluetooth.h>
-// #include <zephyr/bluetooth/uuid.h>
-// #include <zephyr/bluetooth/gatt.h>
-// #include <zephyr/bluetooth/hci.h>
-
-// #include <bluetooth/services/nus.h>
-
-// #include <dk_buttons_and_leds.h>
-
-// #include <zephyr/settings/settings.h>
-
-// #include <stdio.h>
-// #include <string.h>
-
-// #include <zephyr/logging/log.h>
-
-// #include <bluetooth/services/nus.h>
-
-// #include <zephyr/kernel.h>
-// #include <zephyr/device.h>
-// #include <zephyr/devicetree.h>
-// #include <zephyr/drivers/adc.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/kernel.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "adc.h"
 #include "MPU6050.h"
 #include "MLX90614.h"
 #include "BMP280.h"
+#include "MAX30102.h"
+#include "heart_rate.h"
 #include "i2c.h"
 #include 
 #define LOG_MODULE_NAME peripheral_uart
@@ -870,13 +833,14 @@ int main(void)
         return 0;
     }
 	printk("started pairing\n");
-    LOG_INF("Advertising started");
+    	LOG_INF("Advertising started");
 
 
 	//----------------------
 	    /* Verify ADC readiness */
-    adc_init();
+    	adc_init();
 	i2c_init();
+	max30102_default_setup(&dev_max30102);
 	//-------------------------
     // Main loop to blink LED to indicate status
     for (;;) {
@@ -884,6 +848,7 @@ int main(void)
 
 		get_adc_data();
 		i2c_read_data();
+	    	max30102_print_data();
 
         dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		
