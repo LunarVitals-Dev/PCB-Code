@@ -32,8 +32,8 @@ uint8_t rates[RATE_SIZE]; //Array of heart rates
 uint8_t rateSpot = 0;
 long lastBeat = 0; //Time at which the last beat occurred
 
-double beatsPerMinute = 0;
-double beatAvg = 0;
+float beatsPerMinute = 0;
+int beatAvg = 0;
 //static const struct i2c_dt_spec max30102_dev = MAX30102_DT_SPEC;
 static sensor_struct sensor_data;
 
@@ -327,7 +327,7 @@ void max30102_read_data_hr(const struct i2c_dt_spec *dev_max30102)
 
 				message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
-                    "\"Heart Rate Sensor\": {\"AvgBPM\": %.2f},",
+                    "\"MAX_Heart Rate Sensor\": {\"AvgBPM\": %d},",
                     beatAvg
                 );
 				 if (message_offset > 1) {
@@ -337,7 +337,7 @@ void max30102_read_data_hr(const struct i2c_dt_spec *dev_max30102)
 				strcat(message, "}]");
 
 				// Print final JSON message
-				printf("%s\n", message);
+				//printf("%s\n", message);
 
 				// Send the message over Bluetooth
 				send_message_to_bluetooth(message);

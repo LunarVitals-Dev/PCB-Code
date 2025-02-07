@@ -26,7 +26,7 @@ static struct adc_sequence sequence = {
 };
 
 
-// -----------------Filtering ------------------
+// -----------------Filtering Pulse ------------------
 #include <math.h>  // Include for exponential calculations if needed
     // Filter Variables
 int32_t prev_sample = 0; // Derivative filter variable
@@ -41,7 +41,96 @@ int32_t previous_bpm= 0;
 int32_t derivative_filter(int32_t new_sample, int32_t prev_sample) {
     return new_sample - prev_sample;
 }
-// -----------------Filtering ------------------
+// -----------------Filtering  Pulse------------------
+
+// -------- Filtering Respiratory---------------------------------------------
+
+#include <math.h>  // Include for exponential calculations if needed
+#define MOVING_AVERAGE_WINDOW 5
+
+// Filter Variables
+int32_t prev_val_moving_avg_breath = 0;
+float prev_BRPM = 0;
+// Breathing rate variables 
+bool rising_breath = false;
+uint32_t last_peak_time_breath = 0; // Timestamp of the last valid peak
+
+/* Moving Average Filter */
+int32_t moving_average_filter_breath(int32_t *buffer, int32_t new_sample) {
+    static int32_t sum = 0;
+    static int index = 0;
+    static int32_t data_buffer[MOVING_AVERAGE_WINDOW] = {0};
+
+    sum -= data_buffer[index];
+    data_buffer[index] = new_sample;
+    sum += new_sample;
+
+    index = (index + 1) % MOVING_AVERAGE_WINDOW;
+    return sum / MOVING_AVERAGE_WINDOW;
+}
+// -------- Filtering  Respiratory---------------------------------------------
+
+
+
+// ------- Breathing Rate Calculation ------------------------------
+#define BREATHING_THRESHOLD 10   // Minimum change to detect a breath
+#define MAX_PEAKS_BREATH 10            // Circular buffer for peak timestamps
+#define MIN_PEAK_INTERVAL_MS_BREATH 1500 // ~40 breaths per minute
+
+// Detect peaks
+bool detect_peak_breath(int32_t current_value, int32_t prev_value, bool *rising) {
+    if (*rising && current_value < prev_value) {
+        *rising = false;
+        return true; // Peak detected
+    } else if (!*rising && current_value > prev_value + BREATHING_THRESHOLD) {
+        *rising = true;
+        // printf("Rising True\n"); // for debugging
+    }
+    return false;
+}
+
+// Circular buffer to store timestamps of peaks
+uint32_t peak_timestamps_breath[MAX_PEAKS_BREATH];
+int peak_index_breath = 0;
+
+void add_peak_timestamp_breath(uint32_t timestamp) {
+    peak_timestamps_breath[peak_index_breath] = timestamp;
+    peak_index_breath = (peak_index_breath + 1) % MAX_PEAKS_BREATH;
+}
+
+float calculate_breathing_rate_new(void) {
+
+    int valid_peaks = 0; // Number of valid peaks
+    if (peak_index_breath < MAX_PEAKS_BREATH) {
+        valid_peaks = peak_index_breath;
+    } else {
+        valid_peaks = MAX_PEAKS_BREATH;
+    }
+
+    if (valid_peaks < 2) {
+        return 0.0; // Not enough peaks to calculate rate
+    }
+
+    // Calculate time intervals between consecutive peaks
+    int interval_count = valid_peaks - 1;
+    uint32_t intervals[interval_count];
+    for (int i = 0; i < interval_count; i++) {
+        int current = (peak_index_breath - i - 1 + MAX_PEAKS_BREATH) % MAX_PEAKS_BREATH;
+        int previous = (current - 1 + MAX_PEAKS_BREATH) % MAX_PEAKS_BREATH;
+        intervals[i] = peak_timestamps_breath[current] - peak_timestamps_breath[previous];
+    }
+
+    // Compute the average interval
+    uint32_t sum_intervals = 0;
+    for (int i = 0; i < interval_count; i++) {
+        sum_intervals += intervals[i];
+    }
+    float avg_period = (float)sum_intervals / interval_count;
+
+    // Convert average period to breaths per minute
+    return 60000.0 / avg_period; // 60000 ms per minute
+}
+// ------- Breathing Rate Calculation ------------------------------
 
 // ------- Heart Rate Calculation ------------------------------
 #define BEAT_THRESHOLD 100   // Minimum change to detect a breath
@@ -160,11 +249,37 @@ void get_adc_data() {
             
             // Append to JSON message
             if (i == 0) {//Respiratory Senosr
+
+                 // Apply Moving Average Filter
+                int32_t moving_avg_breath = moving_average_filter_breath(&prev_val_moving_avg_breath, val_mv);
+                float BRPM = prev_BRPM;
+                //printf(">m:%d\n", moving_avg); // Moving average value
+
+                // Breathing rate calculation
+                if (detect_peak_breath(moving_avg_breath, prev_val_moving_avg_breath, &rising)) {
+                    uint32_t current_time_breath = k_uptime_get(); // Get current uptime in milliseconds
+
+                    // Check if enough time has passed since the last peak
+                    if (current_time_breath - last_peak_time_breath >= MIN_PEAK_INTERVAL_MS) {
+                        last_peak_time_breath = current_time_breath; // Update the last peak time
+                        add_peak_timestamp_breath(current_time_breath); // Add the peak timestamp
+
+                        // Calcuulate and display the breathing rate
+                        float breathing_rate = calculate_breathing_rate_new();
+                        if (breathing_rate > 0) {
+                            BRPM = breathing_rate;
+                            //printf(">b:%.2f\n", breathing_rate); // breathing rate in breaths per minute  
+                        } 
+                    }
+                }
+                prev_val_moving_avg_breath = moving_avg_breath;
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
-                    "\"RespiratoryRate\": {\"Value_mV\": %d},",
-                    val_mv
+                    "\"RespiratoryRate\": {\"avg_mV\": %d, \"BRPM\": %.2f},",
+                    moving_avg_breath, BRPM
                 );
+
+                prev_BRPM = BRPM;
             } else if (i == 1) {// Pulse Sensor
 
                 int final_bpm = previous_bpm;
@@ -195,7 +310,7 @@ void get_adc_data() {
 
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
-                    "\"PulseSensor\": {{\"Value_mV\": %d}, {\"BPM\": %d}},",
+                    "\"PulseSensor\": {\"Value_mV\": %d, \"pulse_BPM\": %d},",
                     val_mv, final_bpm
                 );
             }
@@ -209,7 +324,7 @@ void get_adc_data() {
     strcat(message, "}]");
 
     // Print final JSON message
-    printf("%s\n", message);
+    //printf("%s\n", message);
 
     // Send the message over Bluetooth
     send_message_to_bluetooth(message);

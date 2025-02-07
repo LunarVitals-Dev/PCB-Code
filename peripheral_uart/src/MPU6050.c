@@ -121,11 +121,12 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         //printk("Accelerometer (g): X=%.2f, Y=%.2f, Z=%.2f\n", step_counter.accel_x, step_counter.accel_y, step_counter.accel_z);
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"Accelerometer\": {\"X_g\": %.4f, \"Y_g\": %.4f, \"Z_g\": %.4f},",
+            "\"MPU_Accelerometer\": {\"X_g\": %.4f, \"Y_g\": %.4f, \"Z_g\": %.4f},",
             step_counter.accel_x, step_counter.accel_y, step_counter.accel_z
         );
     } else {
         printk("Failed to read accelerometer data\n");
+         return;
     }
 
     // Read gyroscope data (6 bytes)
@@ -144,13 +145,14 @@ void read_mpu6050_data(const struct device *i2c_dev) {
 
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"Gyroscope\": {{\"X_deg_per_s\": %.2f, \"Y_deg_per_s\": %.2f, \"Z_deg_per_s\": %.2f}, {\"steps\": %d}},",
+            "\"MPU_Gyroscope\": {\"X_deg_per_s\": %.2f, \"Y_deg_per_s\": %.2f, \"Z_deg_per_s\": %.2f, \"steps\": %d},",
             step_counter.gyro_x, step_counter.gyro_y,step_counter.gyro_z, steps
         );
        
         
     } else {
         printk("Failed to read gyroscope data\n");
+         return;
     }
 
     // Remove trailing comma if necessary and close JSON object
@@ -158,7 +160,7 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         message[message_offset - 1] = '\0'; // Replace last comma with null terminator
     }
     strcat(message, "}]");
-    printf("%s\n", message);
+    //printf("%s\n", message);
     // Print or send JSON message
     //printf("%s\n", message);
     send_message_to_bluetooth(message);

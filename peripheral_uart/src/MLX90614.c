@@ -40,7 +40,7 @@ void read_mlx90614_data(const struct device *i2c_dev) {
     float ambient_temp = 0.0, object_temp = 0.0;
     char message[200];
     int message_offset = 0;
-
+    
     // Start JSON object
     message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
 
@@ -49,11 +49,12 @@ void read_mlx90614_data(const struct device *i2c_dev) {
         ambient_temp = ambient_temp_raw * 0.02 - 273.15; // Convert to Celsius
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"AmbientTemperature\": {\"Celsius\": %.2f},",
+            "\"MLX_AmbientTemperature\": {\"Celsius\": %.2f},",
             ambient_temp
         );
     } else {
         printk("Failed to read ambient temperature\n");
+        return;
     }
 
     // Read object temperature
@@ -61,11 +62,12 @@ void read_mlx90614_data(const struct device *i2c_dev) {
         object_temp = object_temp_raw * 0.02 - 273.15; // Convert to Celsius
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"ObjectTemperature\": {\"Celsius\": %.2f},",
+            "\"MLX_ObjectTemperature\": {\"Celsius\": %.2f},",
             object_temp
         );
     } else {
         printk("Failed to read object temperature\n");
+         return;
     }
 
     // Remove trailing comma if necessary and close JSON object
@@ -75,7 +77,7 @@ void read_mlx90614_data(const struct device *i2c_dev) {
     strcat(message, "}]");
 
     // Print or send JSON message
-    printf("%s\n", message);
+   // printf("%s\n", message);
     send_message_to_bluetooth(message);
     // send_message_to_bluetooth(message);  // Uncomment if Bluetooth transmission is implemented
 }
