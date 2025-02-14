@@ -94,7 +94,7 @@ void read_bmp280_data(const struct device *i2c_dev) {
     var2_p = (((int64_t)dig_P8) * p) >> 19;
     p = ((p + var1_p + var2_p) >> 8) + (((int64_t)dig_P7) << 4);
 
-    float pressure = p / 25600.0f;  // Convert to hPa
+    int pressure = p / 25600;  // Convert to hPa
 
     // Create JSON message
     message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
@@ -105,8 +105,8 @@ void read_bmp280_data(const struct device *i2c_dev) {
     );
     message_offset += snprintf(
         message + message_offset, sizeof(message) - message_offset,
-        "\"BMP_Pressure\": {\"hPa\": %.2f}",
-        pressure/1000.0
+        "\"BMP_Pressure\": {\"hPa\": %d}",
+        pressure
     );
     strcat(message, "}]");
    // printf("%s\n", message);
