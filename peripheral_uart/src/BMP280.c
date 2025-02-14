@@ -100,13 +100,13 @@ void read_bmp280_data(const struct device *i2c_dev) {
     message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
     message_offset += snprintf(
         message + message_offset, sizeof(message) - message_offset,
-        "\"BMP_Temperature\": {\"Celsius\": %.2f}",
+        "\"BMP_Temperature\": {\"Celsius\": %.2f},",
         celsius
     );
     message_offset += snprintf(
         message + message_offset, sizeof(message) - message_offset,
         "\"BMP_Pressure\": {\"hPa\": %.2f}",
-        pressure
+        pressure/1000.0
     );
     strcat(message, "}]");
    // printf("%s\n", message);

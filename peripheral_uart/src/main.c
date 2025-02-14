@@ -595,12 +595,12 @@ void send_message_to_bluetooth(const char *msg)
 
     int plen = strlen(msg);
     int loc = 0;
-    printk("Message length: %d\n", plen);
-    printk("Message content: \"%s\"\n", msg);
+    // printk("Message length: %d\n", plen);
+    // printk("Message content: \"%s\"\n", msg);
 
     // Copy the message into the nus_data buffer
     while (plen > 0) {
-        printk("Copying message to buffer. Remaining length: %d, Current location: %d\n", plen, loc);
+        //printk("Copying message to buffer. Remaining length: %d, Current location: %d\n", plen, loc);
 
         // Copy the next chunk of the message to the buffer
         int chunk_size = (plen > sizeof(nus_data.data) - nus_data.len) ? (sizeof(nus_data.data) - nus_data.len) : plen;
@@ -609,21 +609,23 @@ void send_message_to_bluetooth(const char *msg)
         loc += chunk_size;
         plen -= chunk_size;
 
-        printk("Buffer length after copy: %d\n", nus_data.len);
-        printk("Buffer content: \"%.*s\"\n", nus_data.len, nus_data.data);
+        // printk("Buffer length after copy: %d\n", nus_data.len);
+        // printk("Buffer content: \"%.*s\"\n", nus_data.len, nus_data.data);
 
         // If the buffer is full or the message ends with a newline or carriage return, send it over BLE
         if (nus_data.len >= sizeof(nus_data.data) || 
             (nus_data.data[nus_data.len - 1] == '\n') || 
             (nus_data.data[nus_data.len - 1] == '\r')) {
-            printk("Buffer is ready to send. Sending data over BLE.\n");
+            //printk("Buffer is ready to send. Sending data over BLE.\n");
 
             // Send data over BLE connection
             if (bt_nus_send(NULL, nus_data.data, nus_data.len)) {
                 LOG_WRN("Failed to send data over BLE connection");
                 printk("Warning: Failed to send data over BLE connection.\n");
             } else {
-                printk("Data successfully sent over BLE. Data: \"%.*s\"\n", nus_data.len, nus_data.data);
+                //printk("Data successfully sent over BLE. Data: \"%.*s\"\n", nus_data.len, nus_data.data);
+                
+				printk("%.*s", nus_data.len, nus_data.data);
             }
 
             // Reset buffer for the next message part
@@ -631,7 +633,7 @@ void send_message_to_bluetooth(const char *msg)
         }
     }
 
-    printk("send_message_to_bluetooth completed.\n");
+    //printk("send_message_to_bluetooth completed.\n");
 }
 
 

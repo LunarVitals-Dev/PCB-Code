@@ -275,8 +275,8 @@ void get_adc_data() {
                 prev_val_moving_avg_breath = moving_avg_breath;
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
-                    "\"RespiratoryRate\": {\"avg_mV\": %d, \"BRPM\": %.2f},",
-                    moving_avg_breath, BRPM
+                    "\"RespiratoryRate\": {\"avg_mV\": %.2f, \"BRPM\": %.2f},",
+                    moving_avg_breath/3300.0, BRPM
                 );
 
                 prev_BRPM = BRPM;
@@ -310,8 +310,8 @@ void get_adc_data() {
 
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
-                    "\"PulseSensor\": {\"Value_mV\": %d, \"pulse_BPM\": %d},",
-                    val_mv, final_bpm
+                    "\"PulseSensor\": {\"Value_mV\": %.2f, \"pulse_BPM\": %d},",
+                    val_mv/3300.0, final_bpm
                 );
             }
         }
