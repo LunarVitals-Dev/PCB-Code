@@ -36,24 +36,24 @@ This project utilizes the Nordic nRF52840 and various sensors for data collectio
 4. **MAX30102 (Pulse Oximeter & Heart Rate Sensor)**  
    - [Datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/max30102.pdf)  
    - **Connections:**
-     - SDA → P0.30
-     - SCL → P0.31
-     - VDD → VDD
-     - GND → GND
+     - SDA -> P0.30
+     - SCL -> P0.31
+     - VDD -> VDD
+     - GND -> GND
 
 5. **SEN-11754 (Flex Sensor)**  
    - [Datasheet](https://www.digikey.com/en/products/detail/sparkfun-electronics/SEN-11574/5762397)  
    - **Connections:**
-     - ADC → P0.04
-     - VDD → VDD
-     - GND → GND
+     - ADC -> P0.04
+     - VDD -> VDD
+     - GND -> GND
 
 6. **Stretch Sensor**  
    - [Datasheet](https://www.verical.com/datasheet/adafruit-misc-sensors-519-5047094.pdf)  
    - **Connections:**
-     - ADC → P0.03
-     - VDD → VDD
-     - GND → GND
+     - ADC -> P0.03
+     - VDD -> VDD
+     - GND -> GND
 
 ## Notes
 - Ensure pull-up resistors are used where necessary for I2C lines.
