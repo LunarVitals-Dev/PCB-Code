@@ -36,28 +36,33 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 // Define the interval at which to send the message (e.g., every 5 seconds)
 #define MESSAGE_INTERVAL K_MSEC(5000)
 
+//-------------LEDS--------------
+#define LED1_NODE DT_ALIAS(led_custom_1)
+#define LED2_NODE DT_ALIAS(led_custom_2)
+#define LED3_NODE DT_ALIAS(led_custom_3)
+static const struct device *gpio_dev;
+#define GREEN_LED_PIN 4
+#define BLUE_LED_PIN 29
+#define RED_LED_PIN 28
 
-//------------
-// #define ADC_REF_VOLTAGE_MV 600 // Internal reference in mV
-// #define ADC_GAIN (1.0 / 6.0)    // Gain of 1/6
-// #define ADC_RESOLUTION 4096     // 12-bit resolution
 
-// /* ADC channel configuration via Device Tree */
-// static const struct adc_dt_spec adc_channel = ADC_DT_SPEC_GET(DT_PATH(zephyr_user));
+void bluetooth_pairing_led(int status){
+	gpio_pin_set(gpio_dev, BLUE_LED_PIN, status);
+	printk("Blue led \n");
+}
 
-// /* ADC buffer and sequence configuration */
-// static int16_t buf;
-// static struct adc_sequence sequence = {
-//     .buffer = &buf,
-//     .buffer_size = sizeof(buf), 
-//     /* Optional calibration */
-//     //.calibrate = true,
-// };
+void error_led(int status){
+	gpio_pin_set(gpio_dev, RED_LED_PIN, status);
+	
+}
 
-// int32_t convert_to_mv(int16_t raw_value) {
-//     return (int32_t)((raw_value * ADC_REF_VOLTAGE_MV * (1.0 / ADC_GAIN)) / ADC_RESOLUTION);
-// }
-//--------------
+void connected_led(int status){
+	gpio_pin_set(gpio_dev, GREEN_LED_PIN, status);
+	printk("Green led \n");
+}
+//------------------------------
+bool collect_data = true;
+//-----------------------
 
 static K_SEM_DEFINE(ble_init_ok, 0, 1);
 
@@ -355,6 +360,8 @@ static void connected(struct bt_conn *conn, uint8_t err)
 	current_conn = bt_conn_ref(conn);
 
 	dk_set_led_on(CON_STATUS_LED);
+	connected_led(1);
+	bluetooth_pairing_led(0);
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason)
@@ -364,7 +371,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 	printk("Disconnected: %s (reason %u)", addr, reason);
 	LOG_INF("Disconnected: %s (reason %u)", addr, reason);
-
+	connected_led(0);
 	if (auth_conn) {
 		bt_conn_unref(auth_conn);
 		auth_conn = NULL;
@@ -375,6 +382,8 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 		current_conn = NULL;
 		dk_set_led_off(CON_STATUS_LED);
 	}
+
+
 }
 
 #ifdef CONFIG_BT_NUS_SECURITY_ENABLED
@@ -442,6 +451,8 @@ static void pairing_complete(struct bt_conn *conn, bool bonded)
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 	printf("Pairing completed: %s, bonded: %d", addr, bonded);
 	LOG_INF("Pairing completed: %s, bonded: %d", addr, bonded);
+
+	//bluetooth_pairing_led(0);
 }
 
 
@@ -547,17 +558,53 @@ static void num_comp_reply(bool accept)
 
 void button_changed(uint32_t button_state, uint32_t has_changed)
 {
-	uint32_t buttons = button_state & has_changed;
-	printf("button changed");
-	if (auth_conn) {
-		if (buttons & KEY_PASSKEY_ACCEPT) {
-			num_comp_reply(true);
-		}
+   uint32_t buttons = button_state & has_changed;
 
-		if (buttons & KEY_PASSKEY_REJECT) {
-			num_comp_reply(false);
+    // Ignore debounce by checking if the new state is 0 (button quickly released)
+    if (button_state == 0) {
+        return;
+    }
+
+
+    printf("Button changed: state=0x%08X, changed=0x%08X, pressed=0x%08X\n",
+           button_state, has_changed, buttons);
+
+	if(buttons == 1){
+		//start pairing 
+		 // Start Bluetooth advertising
+		int err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
+		if (err) {
+			printk("error starting pairing\n");
+			
+			return 0;
+		}
+		printk("started pairing\n");
+			LOG_INF("Advertising started");
+		bluetooth_pairing_led(1);
+	}
+
+	if(buttons == 4){
+		
+		collect_data = !collect_data;
+		error_led(!collect_data);
+		if(collect_data){
+			 printf("Collecting Data\n");
+		}
+		else{
+			printf("Pausing Data Collection\n");
 		}
 	}
+    if (auth_conn) {
+        if (buttons & KEY_PASSKEY_ACCEPT) {
+            printf("KEY_PASSKEY_ACCEPT pressed\n");
+            num_comp_reply(true);
+        }
+
+        if (buttons & KEY_PASSKEY_REJECT) {
+            printf("KEY_PASSKEY_REJECT pressed\n");
+            num_comp_reply(false);
+        }
+    }
 }
 #endif /* CONFIG_BT_NUS_SECURITY_ENABLED */
 
@@ -637,144 +684,26 @@ void send_message_to_bluetooth(const char *msg)
 }
 
 
-// //works half
-// void send_message_to_bluetooth(const char *msg)
-// {
-//     printk("Starting send_message_to_bluetooth.\n");
-
-//     // Check if a Bluetooth connection is established
-//     if (!current_conn) {
-//         printk("No Bluetooth connection. Cannot send message.\n");
-//         return;
-//     }
-
-//     struct uart_data_t nus_data = {
-//         .len = 0,
-//     };
-
-//     int plen = strlen(msg);
-//     int loc = 0;
-
-//     printk("Message length: %d\n", plen);
-//     printk("Message content: \"%s\"\n", msg);
-
-//     // Copy the message into the nus_data buffer
-//     while (plen > 0) {
-//         // Calculate how much to copy
-//         int copy_len = (plen > sizeof(nus_data.data) - nus_data.len) ? (sizeof(nus_data.data) - nus_data.len) : plen;
-
-//         printk("Copying message to buffer. Remaining length: %d, Current location: %d, Copying %d bytes\n", plen, loc, copy_len);
-
-//         // Copy a chunk of data into the buffer
-//         memcpy(&nus_data.data[nus_data.len], &msg[loc], copy_len);
-//         nus_data.len += copy_len;
-//         loc += copy_len;
-//         plen -= copy_len;
-
-//         printk("Buffer length after copy: %d\n", nus_data.len);
-//         printk("Buffer content: \"%.*s\"\n", nus_data.len, nus_data.data);
-
-//         // Send data when buffer is full or message ends
-//         if (nus_data.len >= sizeof(nus_data.data) || 
-//             (nus_data.data[nus_data.len - 1] == '\n') || 
-//             (nus_data.data[nus_data.len - 1] == '\r')) {
-//             printk("Buffer is ready to send. Sending data over BLE.\n");
-
-//             // Send data over BLE connection
-//             if (bt_nus_send(NULL, nus_data.data, nus_data.len)) {
-//                 LOG_WRN("Failed to send data over BLE connection");
-//                 printk("Warning: Failed to send data over BLE connection.\n");
-//             } else {
-//                 printk("Data successfully sent over BLE. Data: \"%.*s\"\n", nus_data.len, nus_data.data);
-//             }
-
-//             // Reset buffer for next chunk
-//             nus_data.len = 0;
-//         }
-//     }
-
-//     printk("send_message_to_bluetooth completed.\n");
-// }
 
 
-// void send_message_to_bluetooth(const char *msg)
-// {
-//     printk("Starting send_message_to_bluetooth.\n");
-// 	   // Check if a Bluetooth connection is established
-//     if (!current_conn) {
-//         printk("No Bluetooth connection. Cannot send message.\n");
-//         return;
-//     }
-//     struct uart_data_t nus_data = {
-//         .len = 0,
-//     };
+void configure_leds(void)
+{
+    gpio_dev = DEVICE_DT_GET(DT_NODELABEL(gpio0)); // Assuming GPIO port 0
 
-//     int plen = strlen(msg);
-//     int loc = 0;
+    if (!device_is_ready(gpio_dev)) {
+        printk("Error: GPIO device is not ready.\n");
+        return;
+    }
 
-//     printk("Message length: %d\n", plen);
-//     printk("Message content: \"%s\"\n", msg);
+    gpio_pin_configure(gpio_dev, GREEN_LED_PIN, GPIO_OUTPUT);
+    gpio_pin_configure(gpio_dev, BLUE_LED_PIN, GPIO_OUTPUT);
+    gpio_pin_configure(gpio_dev, RED_LED_PIN, GPIO_OUTPUT);
 
-//     // Copy the message into the nus_data buffer
-//     while (plen > 0) {
-//         printk("Copying message to buffer. Remaining length: %d, Current location: %d\n", plen, loc);
+    bluetooth_pairing_led(0);
+    error_led(0);
+    connected_led(0);
+}
 
-//         memcpy(&nus_data.data[nus_data.len], &msg[loc], plen);
-//         nus_data.len += plen;
-//         loc += plen;
-
-//         printk("Buffer length after copy: %d\n", nus_data.len);
-//         printk("Buffer content: \"%.*s\"\n", nus_data.len, nus_data.data);
-
-//         if (nus_data.len >= sizeof(nus_data.data) || 
-//             (nus_data.data[nus_data.len - 1] == '\n') || 
-//             (nus_data.data[nus_data.len - 1] == '\r')) {
-//             printk("Buffer is ready to send. Sending data over BLE.\n");
-
-//             // Send data over BLE connection
-//             if (bt_nus_send(NULL, nus_data.data, nus_data.len)) {
-//                 LOG_WRN("Failed to send data over BLE connection");
-//                 printk("Warning: Failed to send data over BLE connection.\n");
-//             } else {
-//                 printk("Data successfully sent over BLE. Data: \"%.*s\"\n", nus_data.len, nus_data.data);
-//             }
-            
-//             nus_data.len = 0;
-//         }
-
-//         plen = 0;  // Just one loop, since we're copying the whole message
-//     }
-
-//     printk("send_message_to_bluetooth completed.\n");
-// }
-
-// void send_message_to_bluetooth(const char *msg)
-// { printk("Sending Message.\n");
-//     struct uart_data_t nus_data = {
-//         .len = 0,
-//     };
-
-//     int plen = strlen(msg);
-//     int loc = 0;
-
-//     // Copy the message into the nus_data buffer
-//     while (plen > 0) {
-//         memcpy(&nus_data.data[nus_data.len], &msg[loc], plen);
-//         nus_data.len += plen;
-//         loc += plen;
-
-//         if (nus_data.len >= sizeof(nus_data.data) || 
-//             (nus_data.data[nus_data.len - 1] == '\n') || 
-//             (nus_data.data[nus_data.len - 1] == '\r')) {
-//             // Send data over BLE connection
-//             if (bt_nus_send(NULL, nus_data.data, nus_data.len)) {
-//                 LOG_WRN("Failed to send data over BLE connection");
-//             }
-//             nus_data.len = 0;
-//         }
-//         plen = 0;  // Just one loop, since we're copying the whole message
-//     }
-// }
 
 
 int main(void)
@@ -783,9 +712,9 @@ int main(void)
     int err = 0;
 
     configure_gpio();
-
-    printk("Hi.\n");
-    
+	
+    printk("Starting Program\n");
+    configure_leds();
     // Initialize UART
     err = uart_init();
     if (err) {
@@ -829,7 +758,7 @@ int main(void)
         LOG_ERR("Failed to initialize UART service (err: %d)", err);
         return 0;
     }
-
+	
     // Start Bluetooth advertising
     err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
     if (err) {
@@ -838,7 +767,7 @@ int main(void)
     }
 	printk("started pairing\n");
     	LOG_INF("Advertising started");
-
+	bluetooth_pairing_led(1);
 
 	//----------------------
 	    /* Verify ADC readiness */
@@ -850,12 +779,13 @@ int main(void)
 	int counter = 0;
     for (;;) {
 		
-		if (counter == 0){
-			get_adc_data();
-			i2c_read_data();
+		if(collect_data){
+			if (counter == 0){
+				get_adc_data();
+				i2c_read_data();
+			}
+			max30102_read_data_hr(&dev_max30102);
 		}
-		max30102_read_data_hr(&dev_max30102);
-
         dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		
         k_sleep(K_MSEC(10));
