@@ -43,18 +43,19 @@ This project utilizes the Nordic nRF52840 and various sensors for data collectio
 5. **SEN-11754 (Pulse Sensor)**  
    - [Datasheet](https://www.digikey.com/en/products/detail/sparkfun-electronics/SEN-11574/5762397)  
    - **Connections:**
-     - ADC -> P0.03
+     - ADC -> P0.29
      - VDD -> VDD
      - GND -> GND
 
 6. **Conductive Rubber Cord (Stretch Sensor)**  
    - [Datasheet](https://www.verical.com/datasheet/adafruit-misc-sensors-519-5047094.pdf)  
    - **Connections:**
-     - ADC -> P0.02
+     - ADC -> P0.31
      - VDD -> VDD
      - GND -> GND
 
 ## Notes
 - Ensure pull-up resistors are used where necessary for I2C lines.
-- ADC: AIN0 - 0.02 (Rubber Cord), AIN5 - 0.29 (Pulse Sensor)
+- ADC: AIN5 - 0.29 (Pulse Sensor), AIN7 - 0.31 (Rubber Cord)
+- LEDs: R - 0.02, G - 0.22, B - 0.24
 
