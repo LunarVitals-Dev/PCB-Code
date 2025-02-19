@@ -40,9 +40,34 @@ typedef enum{
 void max30102_default_setup(const struct i2c_dt_spec *dev_max30102);
 void max30102_pulse_oximeter_setup(const struct i2c_dt_spec *dev_max30102, uint8_t sample_avg, bool fifo_rollover, uint8_t fifo_int_threshold, MAX30102_mode_t mode, int sample_rate, int pulse_width, int adc_range);
 int max30102_check(const struct i2c_dt_spec *dev_max30102);
+
 void max30102_read_data_hr(const struct i2c_dt_spec *dev_max30102);
-int max30102_read_data_spo2(const struct i2c_dt_spec *dev_max30102, const struct gpio_dt_spec *led0);
+// int max30102_read_data_spo2(const struct i2c_dt_spec *dev_max30102, const struct gpio_dt_spec *led0);
+void max30102_read_data_spo2(const struct i2c_dt_spec *dev_max30102);
+
+int max30102_available(void);
+void max30102_next_sample(void);
+
+
 
 int gpio_led_setup(const struct gpio_dt_spec *led0);
+
+
+// // ------ Global variables used by MAx30102 Functions such as max30102_read_data_hr() ------
+// static sensor_struct sensor_data;
+// #define BUFFERLENGTH 100
+
+// extern int bufferLength; //buffer length of 100 stores 4 seconds of samples running at 25sps
+// extern int spo2;
+// extern int heartRate;
+// extern int8_t validSPO2; //indicator to show if the SPO2 calculation is valid
+// extern int8_t validHeartRate; //indicator to show if the heart rate calculation is valid
+
+// extern uint32_t irBuffer[BUFFERLENGTH]; // infrared LED sensor data
+// extern uint32_t redBuffer[BUFFERLENGTH]; // red LED sensor data
+// // ------ Global variables used by MAx30102 Functions such as max30102_read_data_hr() ------
+
+
+
 
 #endif 

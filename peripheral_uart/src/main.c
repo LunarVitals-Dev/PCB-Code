@@ -39,26 +39,17 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 //-------------LEDS--------------
 #define LED1_NODE DT_ALIAS(led_custom_1)
 #define LED2_NODE DT_ALIAS(led_custom_2)
-#define LED3_NODE DT_ALIAS(led_custom_3)
 static const struct device *gpio_dev;
-#define GREEN_LED_PIN 4
-#define BLUE_LED_PIN 29
-#define RED_LED_PIN 28
+#define BLUE_LED_PIN 24
+#define RED_LED_PIN 2
 
 
 void bluetooth_pairing_led(int status){
 	gpio_pin_set(gpio_dev, BLUE_LED_PIN, status);
-	printk("Blue led \n");
 }
 
 void error_led(int status){
 	gpio_pin_set(gpio_dev, RED_LED_PIN, status);
-	
-}
-
-void connected_led(int status){
-	gpio_pin_set(gpio_dev, GREEN_LED_PIN, status);
-	printk("Green led \n");
 }
 //------------------------------
 bool collect_data = true;
@@ -360,8 +351,7 @@ static void connected(struct bt_conn *conn, uint8_t err)
 	current_conn = bt_conn_ref(conn);
 
 	dk_set_led_on(CON_STATUS_LED);
-	connected_led(1);
-	bluetooth_pairing_led(0);
+	bluetooth_pairing_led(1);
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason)
@@ -371,7 +361,6 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 	printk("Disconnected: %s (reason %u)", addr, reason);
 	LOG_INF("Disconnected: %s (reason %u)", addr, reason);
-	connected_led(0);
 	if (auth_conn) {
 		bt_conn_unref(auth_conn);
 		auth_conn = NULL;
@@ -381,6 +370,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 		bt_conn_unref(current_conn);
 		current_conn = NULL;
 		dk_set_led_off(CON_STATUS_LED);
+		bluetooth_pairing_led(0);
 	}
 
 
@@ -430,7 +420,6 @@ static void auth_passkey_confirm(struct bt_conn *conn, unsigned int passkey)
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
 	LOG_INF("Passkey for %s: %06u", addr, passkey);
-	LOG_INF("Press Button 1 to confirm, Button 2 to reject.");
 }
 
 
@@ -570,20 +559,6 @@ void button_changed(uint32_t button_state, uint32_t has_changed)
            button_state, has_changed, buttons);
 
 	if(buttons == 1){
-		//start pairing 
-		 // Start Bluetooth advertising
-		int err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
-		if (err) {
-			printk("error starting pairing\n");
-			
-			return 0;
-		}
-		printk("started pairing\n");
-			LOG_INF("Advertising started");
-		bluetooth_pairing_led(1);
-	}
-
-	if(buttons == 4){
 		
 		collect_data = !collect_data;
 		error_led(!collect_data);
@@ -695,13 +670,11 @@ void configure_leds(void)
         return;
     }
 
-    gpio_pin_configure(gpio_dev, GREEN_LED_PIN, GPIO_OUTPUT);
     gpio_pin_configure(gpio_dev, BLUE_LED_PIN, GPIO_OUTPUT);
     gpio_pin_configure(gpio_dev, RED_LED_PIN, GPIO_OUTPUT);
 
     bluetooth_pairing_led(0);
     error_led(0);
-    connected_led(0);
 }
 
 
@@ -776,21 +749,16 @@ int main(void)
 	max30102_default_setup(&dev_max30102);
 	//-------------------------
     // Main loop to blink LED to indicate status
-	int counter = 0;
     for (;;) {
 		
 		if(collect_data){
-			if (counter == 0){
-				get_adc_data();
-				i2c_read_data();
-			}
-			max30102_read_data_hr(&dev_max30102);
+			get_adc_data();
+			i2c_read_data();
+			max30102_read_data_spo2(&dev_max30102);
 		}
         dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		
-        k_sleep(K_MSEC(10));
-		counter += 1;
-		counter = counter % 10;
+        k_sleep(K_MSEC(100));
     }
 
 }
