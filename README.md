@@ -8,26 +8,25 @@ This project utilizes the Nordic nRF52840 and various sensors for data collectio
 1. **MLX90614 (Infrared Temperature Sensor)**  
    - [Datasheet](https://www.melexis.com/en/documents/documentation/datasheets/datasheet-mlx90614)  
    - **Connections:**
-     - SDA -> P0.26
-     - SCL -> P0.27
+     - SDA -> P0.13
+     - SCL -> P0.15
      - VDD -> VDD
      - GND -> GND
 
 2. **MPU6050 (Accelerometer & Gyroscope)**  
    - [Datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf)  
    - **Connections:**
-     - SDA -> P0.26
-     - SCL -> P0.27
+     - SDA -> P0.13
+     - SCL -> P0.15
      - VDD -> VDD
      - GND -> GND
 
 3. **BMP280 (Barometric Pressure Sensor)**  
    - [Datasheet](https://cdn-shop.adafruit.com/datasheets/BST-BMP280-DS001-11.pdf)   
    - **Connections:**
-     - SCK -> P0.27
-     - SDI -> P0.26
+     - SDI -> P0.13
+     - SCK -> P0.15
      - SDO -> VDD
-     - CS -> VDD
      - 3Vo -> VDD
      - GND -> GND
 
@@ -36,8 +35,8 @@ This project utilizes the Nordic nRF52840 and various sensors for data collectio
 4. **MAX30102 (Heart Rate & Blood Oxygen Sensor)**  
    - [Datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/max30102.pdf)  
    - **Connections:**
-     - SDA -> P0.26
-     - SCL -> P0.27
+     - SDA -> P1.10
+     - SCL -> P1.15
      - VDD -> VDD
      - GND -> GND
 
@@ -57,6 +56,5 @@ This project utilizes the Nordic nRF52840 and various sensors for data collectio
 
 ## Notes
 - Ensure pull-up resistors are used where necessary for I2C lines.
-- I2C: SDA - 0.13, SCL - 0.15
 - ADC: AIN0 - 0.02 (Rubber Cord), AIN5 - 0.29 (Pulse Sensor)
 
