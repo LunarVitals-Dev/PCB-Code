@@ -423,7 +423,7 @@ void max30102_read_data_spo2(const struct i2c_dt_spec * dev_max30102) //  Commen
 	maxim_heart_rate_and_oxygen_saturation(irBuffer, bufferLength, redBuffer, &spo2, &validSPO2, &heartRate, &validHeartRate);
 
 	//print ir and red values
-	printk("IR=%d, Red=%d\n", irBuffer[bufferLength-1], redBuffer[bufferLength-1]);
+	// printk("IR=%d, Red=%d\n", irBuffer[bufferLength-1], redBuffer[bufferLength-1]);
 
 	if (irBuffer[bufferLength-1] < 100000) { // checking IR value to see if finger is placed
 		spo2 = 0;
