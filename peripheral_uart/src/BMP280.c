@@ -109,6 +109,6 @@ void read_bmp280_data(const struct device *i2c_dev) {
         pressure
     );
     strcat(message, "}]");
-   // printf("%s\n", message);
+    printf("%s\n", message);
     send_message_to_bluetooth(message);
 }

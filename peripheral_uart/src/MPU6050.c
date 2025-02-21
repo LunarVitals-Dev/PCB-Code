@@ -160,9 +160,8 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         message[message_offset - 1] = '\0'; // Replace last comma with null terminator
     }
     strcat(message, "}]");
-    //printf("%s\n", message);
     // Print or send JSON message
-    //printf("%s\n", message);
+    printf("%s\n", message);
     send_message_to_bluetooth(message);
     // Process acceleration and gyroscope data for step detection
 }

@@ -15,26 +15,16 @@ int read_mlx90614_register(const struct device *i2c_dev, uint8_t reg_addr, uint1
     return 0;
 }
 
-// void read_mlx90614_data(const struct device *i2c_dev) {
-//     uint16_t ambient_temp_raw, object_temp_raw;
-//     float ambient_temp, object_temp;
+int mlx90614_init(const struct device *i2c_dev) {
+    uint16_t device_id;
+    if (i2c_read_register(i2c_dev, MLX90614_ADDR, 0x2E, &device_id) != 0) {
+        printk("MLX90614 not detected! (device_id: 0x%02X)\n", device_id);
+    }
 
-//     // Read ambient temperature
-//     if (read_mlx90614_register(i2c_dev, MLX90614_TA, &ambient_temp_raw) == 0) {
-//         ambient_temp = ambient_temp_raw * 0.02 - 273.15; // Convert to Celsius
-//         printk("Ambient Temperature: %.2f °C\n", ambient_temp);
-//     } else {
-//         printk("Failed to read ambient temperature\n");
-//     }
+    printk("MLX90614 detected (device_id: 0x%02X)\n", device_id);
+    return 0;
+}
 
-//     // Read object temperature
-//     if (read_mlx90614_register(i2c_dev, MLX90614_TOBJ1, &object_temp_raw) == 0) {
-//         object_temp = object_temp_raw * 0.02 - 273.15; // Convert to Celsius
-//         printk("Object Temperature: %.2f °C\n", object_temp);
-//     } else {
-//         printk("Failed to read object temperature\n");
-//     }
-// }
 void read_mlx90614_data(const struct device *i2c_dev) {
     uint16_t ambient_temp_raw, object_temp_raw;
     float ambient_temp = 0.0, object_temp = 0.0;
