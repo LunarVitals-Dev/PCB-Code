@@ -3,6 +3,8 @@
         "${workspaceFolder}"
     ],
     "files.associations": {
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "devicetree.h": "c",
+        "bluetooth.h": "c"
     }
 }
