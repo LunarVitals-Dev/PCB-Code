@@ -744,7 +744,7 @@ int main(void)
 
 	//----------------------
 	    /* Verify ADC readiness */
-    // adc_init();
+    adc_init();
 	i2c_init();
 	max30102_default_setup(&dev_max30102);
 	//-------------------------
@@ -752,7 +752,7 @@ int main(void)
     for (;;) {
 		
 		if(collect_data){
-			// get_adc_data();
+			get_adc_data();
 			i2c_read_data();
 			max30102_read_data_spo2(&dev_max30102);
 		}

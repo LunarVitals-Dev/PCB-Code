@@ -133,9 +133,9 @@ float calculate_breathing_rate_new(void) {
 // ------- Breathing Rate Calculation ------------------------------
 
 // ------- Heart Rate Calculation ------------------------------
-#define BEAT_THRESHOLD 100   // Minimum change to detect a breath
+#define BEAT_THRESHOLD 80   // Minimum change to detect a breath
 #define MAX_PEAKS 15            // Circular buffer for peak timestamps
-#define MIN_PEAK_INTERVAL_MS 600 // Minimum interval between peaks for valid BPM calculation (at least 60 BPM)
+#define MIN_PEAK_INTERVAL_MS 500 // Minimum interval between peaks for valid BPM calculation 
 
 // Detect peaks
 bool detect_peak(int32_t current_value, int32_t prev_value, bool *rising) {
@@ -324,7 +324,7 @@ void get_adc_data() {
     strcat(message, "}]");
 
     // Print final JSON message
-    //printf("%s\n", message);
+    printf("%s\n", message);
 
     // Send the message over Bluetooth
     send_message_to_bluetooth(message);

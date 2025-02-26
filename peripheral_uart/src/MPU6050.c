@@ -8,9 +8,9 @@
 
 // Step detection configuration
 #define WINDOW_SIZE         10   // Moving average window size
-#define STEP_THRESHOLD     0.08f  // Minimum acceleration magnitude to register as step
-#define STEP_COOLDOWN_MS   500  // Minimum time between steps
-#define GYRO_STEP_THRESHOLD 1.5f // Gyroscope threshold for step detection
+#define STEP_THRESHOLD     0.10f  // Minimum acceleration magnitude to register as step
+#define STEP_COOLDOWN_MS   600  // Minimum time between steps
+#define GYRO_STEP_THRESHOLD 3.0f // Gyroscope threshold for step detection
 
 // Step counter structure
 typedef struct {

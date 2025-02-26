@@ -16,5 +16,6 @@
 
 int read_mlx90614_register(const struct device *i2c_dev, uint8_t reg_addr, uint16_t *data);
 void read_mlx90614_data(const struct device *i2c_dev);
+void mlx90614_init(const struct device *i2c_dev);
 //void read_mlx90614_data(const struct device *i2c_dev, char *buffer, size_t size);
 #endif

@@ -15,14 +15,13 @@ int read_mlx90614_register(const struct device *i2c_dev, uint8_t reg_addr, uint1
     return 0;
 }
 
-int mlx90614_init(const struct device *i2c_dev) {
+void mlx90614_init(const struct device *i2c_dev) {
     uint16_t device_id;
     if (i2c_read_register(i2c_dev, MLX90614_ADDR, 0x2E, &device_id) != 0) {
         printk("MLX90614 not detected! (device_id: 0x%02X)\n", device_id);
     }
 
     printk("MLX90614 detected (device_id: 0x%02X)\n", device_id);
-    return 0;
 }
 
 void read_mlx90614_data(const struct device *i2c_dev) {
@@ -67,9 +66,8 @@ void read_mlx90614_data(const struct device *i2c_dev) {
     strcat(message, "}]");
 
     // Print or send JSON message
-   // printf("%s\n", message);
+    printf("%s\n", message);
     send_message_to_bluetooth(message);
-    // send_message_to_bluetooth(message);  // Uncomment if Bluetooth transmission is implemented
 }
 
 // void read_mlx90614_data(const struct device *i2c_dev, char *buffer, size_t size) {
