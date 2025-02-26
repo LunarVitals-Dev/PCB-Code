@@ -26,4 +26,4 @@ empty_file.o: C:/ncs/v2.7.0/zephyr/misc/empty_file.c \
  C:/ncs/v2.7.0/zephyr/dts/arm/nordic/override.dtsi \
  C:/ncs/v2.7.0/zephyr/boards/nordic/nrf52840dongle/nrf52840dongle_nrf52840-pinctrl.dtsi \
  C:/ncs/v2.7.0/zephyr/boards/nordic/nrf52840dongle/fstab-stock.dtsi \
- C:/Users/jena1/OneDrive/Documents/SchoolProject/Capstone/PCB-Code/peripheral_uart/app.overlay
+ app.overlay

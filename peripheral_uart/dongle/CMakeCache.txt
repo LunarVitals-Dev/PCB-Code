@@ -316,7 +316,7 @@ DTC:FILEPATH=C:/ncs/toolchains/ce3b5ff664/opt/bin/dtc.exe
 // parameter. These settings will override the settings in the
 // board's .dts file. Multiple files may be listed, e.g. DTC_OVERLAY_FILE="dts1.overlay
 // dts2.overlay"
-DTC_OVERLAY_FILE:STRING=C:/Users/jena1/OneDrive/Documents/SchoolProject/Capstone/PCB-Code/peripheral_uart/app.overlay
+DTC_OVERLAY_FILE:STRING=app.overlay
 
 //Git command line client
 GIT_EXECUTABLE:FILEPATH=C:/ncs/toolchains/ce3b5ff664/mingw64/bin/git.exe

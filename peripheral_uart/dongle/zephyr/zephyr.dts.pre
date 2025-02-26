@@ -1041,7 +1041,7 @@ zephyr_udc0: &usbd {
  };
 };
 # 0 "<command-line>" 2
-# 1 "C:/Users/jena1/OneDrive/Documents/SchoolProject/Capstone/PCB-Code/peripheral_uart/app.overlay" 1
+# 1 "./app.overlay" 1
 
 
 

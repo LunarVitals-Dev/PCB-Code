@@ -40,7 +40,7 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 #define LED1_NODE DT_ALIAS(led_custom_1)
 #define LED2_NODE DT_ALIAS(led_custom_2)
 static const struct device *gpio_dev;
-#define BLUE_LED_PIN 24
+#define BLUE_LED_PIN 17
 #define RED_LED_PIN 2
 
 
@@ -441,7 +441,7 @@ static void pairing_complete(struct bt_conn *conn, bool bonded)
 	printf("Pairing completed: %s, bonded: %d", addr, bonded);
 	LOG_INF("Pairing completed: %s, bonded: %d", addr, bonded);
 
-	//bluetooth_pairing_led(0);
+	bluetooth_pairing_led(0);
 }
 
 
@@ -609,51 +609,51 @@ void send_message_to_bluetooth(const char *msg)
 {
     //printk("Starting send_message_to_bluetooth.\n");
 
-    // Check if a Bluetooth connection is established
-    if (!current_conn) {
-        printk(".");
-        return;
-    }
+    // // Check if a Bluetooth connection is established
+    // if (!current_conn) {
+    //     printk(".");
+    //     return;
+    // }
 
-    int plen = strlen(msg);
-    int loc = 0;
-    // printk("Message length: %d\n", plen);
-    // printk("Message content: \"%s\"\n", msg);
+    // int plen = strlen(msg);
+    // int loc = 0;
+    // // printk("Message length: %d\n", plen);
+    // // printk("Message content: \"%s\"\n", msg);
 
-    // Copy the message into the nus_data buffer
-    while (plen > 0) {
-        //printk("Copying message to buffer. Remaining length: %d, Current location: %d\n", plen, loc);
+    // // Copy the message into the nus_data buffer
+    // while (plen > 0) {
+    //     //printk("Copying message to buffer. Remaining length: %d, Current location: %d\n", plen, loc);
 
-        // Copy the next chunk of the message to the buffer
-        int chunk_size = (plen > sizeof(nus_data.data) - nus_data.len) ? (sizeof(nus_data.data) - nus_data.len) : plen;
-        memcpy(&nus_data.data[nus_data.len], &msg[loc], chunk_size);
-        nus_data.len += chunk_size;
-        loc += chunk_size;
-        plen -= chunk_size;
+    //     // Copy the next chunk of the message to the buffer
+    //     int chunk_size = (plen > sizeof(nus_data.data) - nus_data.len) ? (sizeof(nus_data.data) - nus_data.len) : plen;
+    //     memcpy(&nus_data.data[nus_data.len], &msg[loc], chunk_size);
+    //     nus_data.len += chunk_size;
+    //     loc += chunk_size;
+    //     plen -= chunk_size;
 
-        // printk("Buffer length after copy: %d\n", nus_data.len);
-        // printk("Buffer content: \"%.*s\"\n", nus_data.len, nus_data.data);
+    //     // printk("Buffer length after copy: %d\n", nus_data.len);
+    //     // printk("Buffer content: \"%.*s\"\n", nus_data.len, nus_data.data);
 
-        // If the buffer is full or the message ends with a newline or carriage return, send it over BLE
-        if (nus_data.len >= sizeof(nus_data.data) || 
-            (nus_data.data[nus_data.len - 1] == '\n') || 
-            (nus_data.data[nus_data.len - 1] == '\r')) {
-            //printk("Buffer is ready to send. Sending data over BLE.\n");
+    //     // If the buffer is full or the message ends with a newline or carriage return, send it over BLE
+    //     if (nus_data.len >= sizeof(nus_data.data) || 
+    //         (nus_data.data[nus_data.len - 1] == '\n') || 
+    //         (nus_data.data[nus_data.len - 1] == '\r')) {
+    //         //printk("Buffer is ready to send. Sending data over BLE.\n");
 
-            // Send data over BLE connection
-            if (bt_nus_send(NULL, nus_data.data, nus_data.len)) {
-                LOG_WRN("Failed to send data over BLE connection");
-                printk("Warning: Failed to send data over BLE connection.\n");
-            } else {
-                //printk("Data successfully sent over BLE. Data: \"%.*s\"\n", nus_data.len, nus_data.data);
+    //         // Send data over BLE connection
+    //         if (bt_nus_send(NULL, nus_data.data, nus_data.len)) {
+    //             LOG_WRN("Failed to send data over BLE connection");
+    //             printk("Warning: Failed to send data over BLE connection.\n");
+    //         } else {
+    //             //printk("Data successfully sent over BLE. Data: \"%.*s\"\n", nus_data.len, nus_data.data);
                 
-				printk("%.*s", nus_data.len, nus_data.data);
-            }
+	// 			printk("%.*s", nus_data.len, nus_data.data);
+    //         }
 
-            // Reset buffer for the next message part
-            nus_data.len = 0;
-        }
-    }
+    //         // Reset buffer for the next message part
+    //         nus_data.len = 0;
+    //     }
+    // }
 
     //printk("send_message_to_bluetooth completed.\n");
 }
@@ -689,76 +689,76 @@ int main(void)
     printk("Starting Program\n");
     configure_leds();
     // Initialize UART
-    err = uart_init();
-    if (err) {
-        error();
-    }
+    // err = uart_init();
+    // if (err) {
+    //     error();
+    // }
 
-    // Register authorization callbacks if security is enabled
-    if (IS_ENABLED(CONFIG_BT_NUS_SECURITY_ENABLED)) {
-        err = bt_conn_auth_cb_register(&conn_auth_callbacks);
-        if (err) {
-            printk("Failed to register authorization callbacks.\n");
-            return 0;
-        }
+    // // Register authorization callbacks if security is enabled
+    // if (IS_ENABLED(CONFIG_BT_NUS_SECURITY_ENABLED)) {
+    //     err = bt_conn_auth_cb_register(&conn_auth_callbacks);
+    //     if (err) {
+    //         printk("Failed to register authorization callbacks.\n");
+    //         return 0;
+    //     }
 
-        err = bt_conn_auth_info_cb_register(&conn_auth_info_callbacks);
-        if (err) {
-            printk("Failed to register authorization info callbacks.\n");
-            return 0;
-        }
-    }
+    //     err = bt_conn_auth_info_cb_register(&conn_auth_info_callbacks);
+    //     if (err) {
+    //         printk("Failed to register authorization info callbacks.\n");
+    //         return 0;
+    //     }
+    // }
 
-    // Initialize Bluetooth stack
-    err = bt_enable(NULL);
-    if (err) {
-        error();
-    }
+    // // Initialize Bluetooth stack
+    // err = bt_enable(NULL);
+    // if (err) {
+    //     error();
+    // }
 
-    LOG_INF("Bluetooth initialized");
+    // LOG_INF("Bluetooth initialized");
 
-    // Once Bluetooth is initialized, allow the Bluetooth system to continue with tasks
-    k_sem_give(&ble_init_ok);
+    // // Once Bluetooth is initialized, allow the Bluetooth system to continue with tasks
+    // k_sem_give(&ble_init_ok);
 
-    // Load settings if needed
-    if (IS_ENABLED(CONFIG_SETTINGS)) {
-        settings_load();
-    }
+    // // Load settings if needed
+    // if (IS_ENABLED(CONFIG_SETTINGS)) {
+    //     settings_load();
+    // }
 
-    // Initialize the Nordic UART Service (NUS)
-    err = bt_nus_init(&nus_cb);
-    if (err) {
-        LOG_ERR("Failed to initialize UART service (err: %d)", err);
-        return 0;
-    }
+    // // Initialize the Nordic UART Service (NUS)
+    // err = bt_nus_init(&nus_cb);
+    // if (err) {
+    //     LOG_ERR("Failed to initialize UART service (err: %d)", err);
+    //     return 0;
+    // }
 	
-    // Start Bluetooth advertising
-    err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
-    if (err) {
-        LOG_ERR("Advertising failed to start (err %d)", err);
-        return 0;
-    }
-	printk("started pairing\n");
-    	LOG_INF("Advertising started");
+    // // Start Bluetooth advertising
+    // err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
+    // if (err) {
+    //     LOG_ERR("Advertising failed to start (err %d)", err);
+    //     return 0;
+    // }
+	// printk("started pairing\n");
+    // 	LOG_INF("Advertising started");
 	bluetooth_pairing_led(1);
 
 	//----------------------
 	    /* Verify ADC readiness */
     adc_init();
 	i2c_init();
-	max30102_default_setup(&dev_max30102);
+	// max30102_default_setup(&dev_max30102);
 	//-------------------------
     // Main loop to blink LED to indicate status
     for (;;) {
-		
+		printk(".");
 		if(collect_data){
 			get_adc_data();
 			i2c_read_data();
-			max30102_read_data_spo2(&dev_max30102);
+			// max30102_read_data_spo2(&dev_max30102);
 		}
         dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		
-        k_sleep(K_MSEC(100));
+        k_sleep(K_MSEC(1000));
     }
 
 }
