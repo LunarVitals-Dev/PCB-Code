@@ -6,19 +6,11 @@
 #include "mpu6050.h"
 #include "i2c.h"
 
-// Step detection configuration
-#define WINDOW_SIZE         10   // Moving average window size
-#define STEP_THRESHOLD     0.10f  // Minimum acceleration magnitude to register as step
-#define STEP_COOLDOWN_MS   600  // Minimum time between steps
-#define GYRO_STEP_THRESHOLD 3.0f // Gyroscope threshold for step detection
-
 // Step counter structure
 typedef struct {
-    float magnitude_buffer[WINDOW_SIZE];
-    uint8_t buffer_index;
     uint32_t last_step_time;
     uint32_t step_count;
-    float moving_average;
+    float vector_previous;
     float accel_x;
     float accel_y;
     float accel_z;
@@ -31,49 +23,40 @@ static StepCounter step_counter;
 
 // Initialize the step counter
 static void init_step_counter(void) {
-    step_counter.buffer_index = 0;
     step_counter.last_step_time = 0;
     step_counter.step_count = 0;
-    step_counter.moving_average = 0;
-    
-    for(int i = 0; i < WINDOW_SIZE; i++) {
-        step_counter.magnitude_buffer[i] = 0;
-    }
+    step_counter.vector_previous = 0;
 }
 
-// Process acceleration data for step counting
-static int process_step_detection(float accel_x, float accel_y, float accel_z, float gyro_y, float gyro_z) {
-    // Remove gravity using a high-pass filter approximation
-    float magnitude = fabsf(sqrtf(
+static int process_step_detection(float accel_x, float accel_y, float accel_z) {
+    // Calculate the total acceleration vector magnitude
+    float vector = sqrtf(
         accel_x * accel_x + 
         accel_y * accel_y + 
         accel_z * accel_z
-    ) - 1.0f);
+    );
     
-    // Update moving average
-    step_counter.moving_average -= step_counter.magnitude_buffer[step_counter.buffer_index] / WINDOW_SIZE;
-    step_counter.magnitude_buffer[step_counter.buffer_index] = magnitude;
-    step_counter.moving_average += magnitude / WINDOW_SIZE;
+    // Calculate the difference between current and previous vector (rate of change)
+    float totalvector = fabsf(vector - step_counter.vector_previous);
+    
+    // Print vector values for debugging
+    printk("Vector: %f, Previous Vector: %f, Difference: %f\n", 
+           vector, step_counter.vector_previous, totalvector);
     
     // Get current time in milliseconds
     uint32_t current_time = k_uptime_get_32();
-
-    // printk("Magnitude: %f\n", magnitude);
-    // printk("Moving Average: %f\n", step_counter.moving_average);
     
-    // Detect step using peak detection and gyroscope data
-    if (magnitude > STEP_THRESHOLD && 
-        magnitude > step_counter.moving_average &&
-        fabs(gyro_y) > GYRO_STEP_THRESHOLD &&
-        fabs(gyro_z) > GYRO_STEP_THRESHOLD &&
-        (current_time - step_counter.last_step_time) > STEP_COOLDOWN_MS) {
+    // Detect step using the rate of change threshold
+    if (totalvector > 0.15f && 
+        (current_time - step_counter.last_step_time) > 600) {
         step_counter.step_count++;
         step_counter.last_step_time = current_time;
-        //printk("Total steps: %d\n", step_counter.step_count);
-       
+        printk("Total steps: %d\n", step_counter.step_count);
     }
     
-    step_counter.buffer_index = (step_counter.buffer_index + 1) % WINDOW_SIZE;
+    // Store current vector as previous for next iteration
+    step_counter.vector_previous = vector;
+    
     return step_counter.step_count;
 }
 
@@ -118,11 +101,13 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         step_counter.accel_y = (float)accel_y / 16384.0f;
         step_counter.accel_z = (float)accel_z / 16384.0f;
 
+        int steps = process_step_detection(step_counter.accel_x, step_counter.accel_y, step_counter.accel_z);
+
         //printk("Accelerometer (g): X=%.2f, Y=%.2f, Z=%.2f\n", step_counter.accel_x, step_counter.accel_y, step_counter.accel_z);
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"MPU_Accelerometer\": {\"X_g\": %.4f, \"Y_g\": %.4f, \"Z_g\": %.4f},",
-            step_counter.accel_x, step_counter.accel_y, step_counter.accel_z
+            "\"MPU_Accelerometer\": {\"X_g\": %.4f, \"Y_g\": %.4f, \"Z_g\": %.4f, \"steps\": %d},",
+            step_counter.accel_x, step_counter.accel_y, step_counter.accel_z, steps
         );
     } else {
         printk("Failed to read accelerometer data\n");
@@ -138,15 +123,14 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         step_counter.gyro_x = (float)gyro_x / 131.0f;
         step_counter.gyro_y = (float)gyro_y / 131.0f;
         step_counter.gyro_z = (float)gyro_z / 131.0f;
-        int steps = process_step_detection(step_counter.accel_x, step_counter.accel_y, step_counter.accel_z, step_counter.gyro_y, step_counter.gyro_z);
 
         // printk("Gyroscope (°/s): X=%.2f, Y=%.2f, Z=%.2f\n", 
         //        step_counter.gyro_x, step_counter.gyro_y, step_counter.gyro_z);
 
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"MPU_Gyroscope\": {\"X_deg_per_s\": %.2f, \"Y_deg_per_s\": %.2f, \"Z_deg_per_s\": %.2f, \"steps\": %d},",
-            step_counter.gyro_x, step_counter.gyro_y,step_counter.gyro_z, steps
+            "\"MPU_Gyroscope\": {\"X_deg_per_s\": %.2f, \"Y_deg_per_s\": %.2f, \"Z_deg_per_s\": %.2f},",
+            step_counter.gyro_x, step_counter.gyro_y,step_counter.gyro_z
         );
        
         
