@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "lunar_vitals_custom")(type "KiCad")(uri "${KIPRJMOD}/lunar_vitals_custom.pretty")(options "")(descr ""))
+)
