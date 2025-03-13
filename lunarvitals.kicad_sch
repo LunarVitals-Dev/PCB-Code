@@ -3791,16 +3791,6 @@
 	)
 	(wire
 		(pts
-			(xy 181.61 60.96) (xy 187.96 60.96)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d9699117-c21a-422a-97c6-eb8896670529")
-	)
-	(wire
-		(pts
 			(xy 91.44 24.13) (xy 91.44 40.64)
 		)
 		(stroke
@@ -5576,73 +5566,6 @@
 			(project "lunarvitals"
 				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
 					(reference "#PWR022")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3.3V")
-		(at 187.96 60.96 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "4b6803a4-ec28-4a6f-a686-439fa97d7c4d")
-		(property "Reference" "#PWR03"
-			(at 184.15 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3.3V"
-			(at 191.77 60.9599 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 187.96 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 187.96 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 187.96 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "fe5b5781-4a37-4c5b-bc23-281964325e4b")
-		)
-		(instances
-			(project "lunarvitals"
-				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
-					(reference "#PWR03")
 					(unit 1)
 				)
 			)
