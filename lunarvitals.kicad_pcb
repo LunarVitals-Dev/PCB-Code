@@ -751,6 +751,19 @@
 				)
 			)
 		)
+		(property "LCSC" "C83291"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d1885916-4645-4d1a-b762-1ab52a39fb46")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "Bosch*LGA*2x2.5mm*P0.65mm*")
 		(path "/4fd3e199-cbea-432e-b68d-9dc941eddb36")
 		(sheetname "Root")
@@ -1289,7 +1302,7 @@
 			)
 		)
 		(property "Value" "4.7uf"
-			(at 0.48 1 360)
+			(at 0.48 1 0)
 			(layer "F.Fab")
 			(uuid "929c6448-dd6c-432c-8d3c-e5c2e4a3890e")
 			(effects
@@ -1457,7 +1470,7 @@
 			(uuid "f07b98fb-cf7c-4540-8897-2036cce172cc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "a9ed8a74-d295-4461-8d32-261883e8ab5f")
 			(effects
@@ -1741,7 +1754,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 0 1.17 360)
+			(at 0 1.17 0)
 			(layer "F.Fab")
 			(uuid "e8294987-94b4-40a6-ae8b-b7ce48389837")
 			(effects
@@ -1909,7 +1922,7 @@
 			(uuid "b693350c-9f65-415d-bfb3-7b19b222c96d")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "c51a840a-cd76-4a5a-8d37-8206aab64182")
 			(effects
@@ -2016,7 +2029,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C9900014381"
+		(property "LCSC" "C2288"
 			(at 0 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3185,7 +3198,7 @@
 		(path "/35a7bd0a-c0a5-4ea3-900a-1458983969b0")
 		(sheetname "Root")
 		(sheetfile "lunarvitals.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(fp_line
 			(start -2.91 -3.61)
 			(end -2.91 -2.36)
@@ -5806,7 +5819,7 @@
 		(path "/ded286fb-8443-4d41-952d-692b18b47702")
 		(sheetname "Root")
 		(sheetfile "lunarvitals.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(fp_line
 			(start -2.91 -3.61)
 			(end -2.91 -2.36)
@@ -6933,7 +6946,7 @@
 		(path "/6ba53301-7521-4e2a-a3de-e79680209f83")
 		(sheetname "Root")
 		(sheetfile "lunarvitals.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(fp_line
 			(start -2.91 -3.61)
 			(end -2.91 -2.36)
@@ -7520,7 +7533,7 @@
 		(path "/33b3dbb1-6c2d-4b23-ba9c-21a85d777348")
 		(sheetname "Root")
 		(sheetfile "lunarvitals.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(fp_line
 			(start -23.02 -7.62)
 			(end -23.02 7.62)
@@ -8333,7 +8346,7 @@
 		(path "/b3ad8c41-bc00-43aa-808a-ec6d3ab53a37")
 		(sheetname "Root")
 		(sheetfile "lunarvitals.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(fp_line
 			(start -1 1.06)
 			(end -3.06 1.06)

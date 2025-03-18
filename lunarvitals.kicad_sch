@@ -4818,7 +4818,7 @@
 		(at 166.37 73.66 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -5067,7 +5067,7 @@
 		(at 39.37 173.99 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -5849,6 +5849,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C83291"
+			(at 234.95 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "6"
 			(uuid "8b319203-e472-45be-9543-a030ad01bca7")
 		)
@@ -6044,7 +6053,7 @@
 		(at 135.89 177.8 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -6964,7 +6973,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C9900014381"
+		(property "LCSC" "C2288"
 			(at 238.76 48.26 90)
 			(effects
 				(font
@@ -7072,7 +7081,7 @@
 		(at 39.37 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -7592,7 +7601,7 @@
 		(at 88.9 158.75 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
