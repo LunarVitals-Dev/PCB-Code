@@ -743,30 +743,30 @@
 
  i2c0_default: i2c0_default {
   group1 {
-   psels = <((((((0) * 32U) + (26)) & 0x1FFU) << 0U) | ((12U & 0x7FFFU) << 17U))>,
-    <((((((0) * 32U) + (27)) & 0x1FFU) << 0U) | ((11U & 0x7FFFU) << 17U))>;
+   psels = <((((((0) * 32U) + (13)) & 0x1FFU) << 0U) | ((12U & 0x7FFFU) << 17U))>,
+    <((((((0) * 32U) + (15)) & 0x1FFU) << 0U) | ((11U & 0x7FFFU) << 17U))>;
   };
  };
 
  i2c0_sleep: i2c0_sleep {
   group1 {
-   psels = <((((((0) * 32U) + (26)) & 0x1FFU) << 0U) | ((12U & 0x7FFFU) << 17U))>,
-    <((((((0) * 32U) + (27)) & 0x1FFU) << 0U) | ((11U & 0x7FFFU) << 17U))>;
+   psels = <((((((0) * 32U) + (13)) & 0x1FFU) << 0U) | ((12U & 0x7FFFU) << 17U))>,
+    <((((((0) * 32U) + (15)) & 0x1FFU) << 0U) | ((11U & 0x7FFFU) << 17U))>;
    low-power-enable;
   };
  };
 
  i2c1_default: i2c1_default {
   group1 {
-   psels = <((((((0) * 32U) + (30)) & 0x1FFU) << 0U) | ((12U & 0x7FFFU) << 17U))>,
-    <((((((0) * 32U) + (31)) & 0x1FFU) << 0U) | ((11U & 0x7FFFU) << 17U))>;
+   psels = <((((((1) * 32U) + (10)) & 0x1FFU) << 0U) | ((12U & 0x7FFFU) << 17U))>,
+    <((((((1) * 32U) + (15)) & 0x1FFU) << 0U) | ((11U & 0x7FFFU) << 17U))>;
   };
  };
 
  i2c1_sleep: i2c1_sleep {
   group1 {
-   psels = <((((((0) * 32U) + (30)) & 0x1FFU) << 0U) | ((12U & 0x7FFFU) << 17U))>,
-    <((((((0) * 32U) + (31)) & 0x1FFU) << 0U) | ((11U & 0x7FFFU) << 17U))>;
+   psels = <((((((1) * 32U) + (10)) & 0x1FFU) << 0U) | ((12U & 0x7FFFU) << 17U))>,
+    <((((((1) * 32U) + (15)) & 0x1FFU) << 0U) | ((11U & 0x7FFFU) << 17U))>;
    low-power-enable;
   };
  };

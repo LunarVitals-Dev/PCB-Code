@@ -70,7 +70,7 @@ bool d_i2c_write_to_reg(const struct i2c_dt_spec *i2c_dev, uint8_t address, uint
 bool d_i2c_read_register(const struct i2c_dt_spec *i2c_dev, uint8_t reg_addr, uint8_t *data) {
     int ret = i2c_write_read_dt(i2c_dev, &reg_addr, 1, data, 1);
     if (ret < 0) {
-        printk("Failed to read register %x\n", reg_addr);
+        //printk("Failed to read register %x\n", reg_addr);
         return false;
     } else {
         if(REPORT_SUCCESS) printk("Read register %x\n", reg_addr);
@@ -81,7 +81,7 @@ bool d_i2c_read_register(const struct i2c_dt_spec *i2c_dev, uint8_t reg_addr, ui
 bool d_i2c_read_registers(const struct i2c_dt_spec *i2c_dev, uint8_t reg_addr, uint8_t *data, size_t len) {
     int ret = i2c_write_read_dt(i2c_dev, &reg_addr, 1, data, len);
     if (ret < 0) { 
-        printk("Failed to read %d registers starting from %x\n", len, reg_addr);
+        //printk("Failed to read %d registers starting from %x\n", len, reg_addr);
         return false;
     } else {
         if(REPORT_SUCCESS) printk("Read %d registers starting from %x\n", len, reg_addr);

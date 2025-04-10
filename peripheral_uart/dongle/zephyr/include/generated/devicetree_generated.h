@@ -2779,10 +2779,10 @@
 #define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_bias_pull_down_EXISTS 1
 #define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_low_power_enable 0
 #define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_low_power_enable_EXISTS 1
-#define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_psels {1572890 /* 0x18001a */, 1441819 /* 0x16001b */}
-#define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_psels_IDX_0 1572890
+#define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_psels {1572877 /* 0x18000d */, 1441807 /* 0x16000f */}
+#define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_psels_IDX_0 1572877
 #define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_psels_IDX_0_EXISTS 1
-#define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_psels_IDX_1 1441819
+#define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_psels_IDX_1 1441807
 #define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_psels_IDX_1_EXISTS 1
 #define DT_N_S_pin_controller_S_i2c0_default_S_group1_P_psels_FOREACH_PROP_ELEM(fn) fn(DT_N_S_pin_controller_S_i2c0_default_S_group1, psels, 0) \
 	fn(DT_N_S_pin_controller_S_i2c0_default_S_group1, psels, 1)
@@ -2929,10 +2929,10 @@
 #define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_bias_pull_down_EXISTS 1
 #define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_low_power_enable 1
 #define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_low_power_enable_EXISTS 1
-#define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_psels {1572890 /* 0x18001a */, 1441819 /* 0x16001b */}
-#define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_psels_IDX_0 1572890
+#define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_psels {1572877 /* 0x18000d */, 1441807 /* 0x16000f */}
+#define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_psels_IDX_0 1572877
 #define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_psels_IDX_0_EXISTS 1
-#define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_psels_IDX_1 1441819
+#define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_psels_IDX_1 1441807
 #define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_psels_IDX_1_EXISTS 1
 #define DT_N_S_pin_controller_S_i2c0_sleep_S_group1_P_psels_FOREACH_PROP_ELEM(fn) fn(DT_N_S_pin_controller_S_i2c0_sleep_S_group1, psels, 0) \
 	fn(DT_N_S_pin_controller_S_i2c0_sleep_S_group1, psels, 1)
@@ -3079,10 +3079,10 @@
 #define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_bias_pull_down_EXISTS 1
 #define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_low_power_enable 0
 #define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_low_power_enable_EXISTS 1
-#define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_psels {1572894 /* 0x18001e */, 1441823 /* 0x16001f */}
-#define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_psels_IDX_0 1572894
+#define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_psels {1572906 /* 0x18002a */, 1441839 /* 0x16002f */}
+#define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_psels_IDX_0 1572906
 #define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_psels_IDX_0_EXISTS 1
-#define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_psels_IDX_1 1441823
+#define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_psels_IDX_1 1441839
 #define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_psels_IDX_1_EXISTS 1
 #define DT_N_S_pin_controller_S_i2c1_default_S_group1_P_psels_FOREACH_PROP_ELEM(fn) fn(DT_N_S_pin_controller_S_i2c1_default_S_group1, psels, 0) \
 	fn(DT_N_S_pin_controller_S_i2c1_default_S_group1, psels, 1)
@@ -3229,10 +3229,10 @@
 #define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_bias_pull_down_EXISTS 1
 #define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_low_power_enable 1
 #define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_low_power_enable_EXISTS 1
-#define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_psels {1572894 /* 0x18001e */, 1441823 /* 0x16001f */}
-#define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_psels_IDX_0 1572894
+#define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_psels {1572906 /* 0x18002a */, 1441839 /* 0x16002f */}
+#define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_psels_IDX_0 1572906
 #define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_psels_IDX_0_EXISTS 1
-#define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_psels_IDX_1 1441823
+#define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_psels_IDX_1 1441839
 #define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_psels_IDX_1_EXISTS 1
 #define DT_N_S_pin_controller_S_i2c1_sleep_S_group1_P_psels_FOREACH_PROP_ELEM(fn) fn(DT_N_S_pin_controller_S_i2c1_sleep_S_group1, psels, 0) \
 	fn(DT_N_S_pin_controller_S_i2c1_sleep_S_group1, psels, 1)

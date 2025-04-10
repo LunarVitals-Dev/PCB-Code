@@ -110,7 +110,7 @@ void read_mpu6050_data(const struct device *i2c_dev) {
             step_counter.accel_x, step_counter.accel_y, step_counter.accel_z, steps
         );
     } else {
-        printk("Failed to read accelerometer data\n");
+        printk("Failed to read MPU6050 data\n");
          return;
     }
 

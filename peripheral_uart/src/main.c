@@ -607,11 +607,11 @@ static struct uart_data_t nus_data = {
 // Function to send the message over Bluetooth
 void send_message_to_bluetooth(const char *msg)
 {
-    printk("Starting send_message_to_bluetooth.\n");
+    // printk("Starting send_message_to_bluetooth.\n");
 
-    // Check if a Bluetooth connection is established
+    // // Check if a Bluetooth connection is established
     if (!current_conn) {
-        printk(".");
+        //printk(".");
         return;
     }
 
@@ -688,59 +688,59 @@ int main(void)
 	
     printk("Starting Program\n");
     configure_leds();
-    // Initialize UART
-    err = uart_init();
-    if (err) {
-        error();
-    }
+    // // Initialize UART
+    // err = uart_init();
+    // if (err) {
+    //     error();
+    // }
 
-    // Register authorization callbacks if security is enabled
-    if (IS_ENABLED(CONFIG_BT_NUS_SECURITY_ENABLED)) {
-        err = bt_conn_auth_cb_register(&conn_auth_callbacks);
-        if (err) {
-            printk("Failed to register authorization callbacks.\n");
-            return 0;
-        }
+    // // Register authorization callbacks if security is enabled
+    // if (IS_ENABLED(CONFIG_BT_NUS_SECURITY_ENABLED)) {
+    //     err = bt_conn_auth_cb_register(&conn_auth_callbacks);
+    //     if (err) {
+    //         printk("Failed to register authorization callbacks.\n");
+    //         return 0;
+    //     }
 
-        err = bt_conn_auth_info_cb_register(&conn_auth_info_callbacks);
-        if (err) {
-            printk("Failed to register authorization info callbacks.\n");
-            return 0;
-        }
-    }
+    //     err = bt_conn_auth_info_cb_register(&conn_auth_info_callbacks);
+    //     if (err) {
+    //         printk("Failed to register authorization info callbacks.\n");
+    //         return 0;
+    //     }
+    // }
 
-    // Initialize Bluetooth stack
-    err = bt_enable(NULL);
-    if (err) {
-        error();
-    }
+    // // Initialize Bluetooth stack
+    // err = bt_enable(NULL);
+    // if (err) {
+    //     error();
+    // }
 
-    LOG_INF("Bluetooth initialized");
+    // LOG_INF("Bluetooth initialized");
 
-    // Once Bluetooth is initialized, allow the Bluetooth system to continue with tasks
-    k_sem_give(&ble_init_ok);
+    // // Once Bluetooth is initialized, allow the Bluetooth system to continue with tasks
+    // k_sem_give(&ble_init_ok);
 
-    // Load settings if needed
-    if (IS_ENABLED(CONFIG_SETTINGS)) {
-        settings_load();
-    }
+    // // Load settings if needed
+    // if (IS_ENABLED(CONFIG_SETTINGS)) {
+    //     settings_load();
+    // }
 
-    // Initialize the Nordic UART Service (NUS)
-    err = bt_nus_init(&nus_cb);
-    if (err) {
-        LOG_ERR("Failed to initialize UART service (err: %d)", err);
-        return 0;
-    }
+    // // Initialize the Nordic UART Service (NUS)
+    // err = bt_nus_init(&nus_cb);
+    // if (err) {
+    //     LOG_ERR("Failed to initialize UART service (err: %d)", err);
+    //     return 0;
+    // }
 	
-    // Start Bluetooth advertising
-    err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
-    if (err) {
-        LOG_ERR("Advertising failed to start (err %d)", err);
-        return 0;
-    }
-	printk("started pairing\n");
-    LOG_INF("Advertising started");
-	bluetooth_pairing_led(1);
+    // // Start Bluetooth advertising
+    // err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
+    // if (err) {
+    //     LOG_ERR("Advertising failed to start (err %d)", err);
+    //     return 0;
+    // }
+	// printk("started pairing\n");
+    // LOG_INF("Advertising started");
+	// bluetooth_pairing_led(1);
 
 	//----------------------
 	    /* Verify ADC readiness */
@@ -750,13 +750,14 @@ int main(void)
 	//-------------------------
     // Main loop to blink LED to indicate status
     for (;;) {
-		printk(".");
+		//printk(".");
+		dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
+
 		if(collect_data){
 			get_adc_data();
 			i2c_read_data();
 			max30102_read_data_spo2(&dev_max30102);
 		}
-        dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		
         k_sleep(K_MSEC(1000));
     }
@@ -764,42 +765,42 @@ int main(void)
 }
 
 
-void ble_write_thread(void)
-{
-	/* Don't go any further until BLE is initialized */
-	k_sem_take(&ble_init_ok, K_FOREVER);
-	struct uart_data_t nus_data = {
-		.len = 0,
-	};
+// void ble_write_thread(void)
+// {
+// 	/* Don't go any further until BLE is initialized */
+// 	k_sem_take(&ble_init_ok, K_FOREVER);
+// 	struct uart_data_t nus_data = {
+// 		.len = 0,
+// 	};
 
-	for (;;) {
-		/* Wait indefinitely for data to be sent over bluetooth */
-		struct uart_data_t *buf = k_fifo_get(&fifo_uart_rx_data,
-						     K_FOREVER);
+// 	for (;;) {
+// 		/* Wait indefinitely for data to be sent over bluetooth */
+// 		struct uart_data_t *buf = k_fifo_get(&fifo_uart_rx_data,
+// 						     K_FOREVER);
 
-		int plen = MIN(sizeof(nus_data.data) - nus_data.len, buf->len);
-		int loc = 0;
+// 		int plen = MIN(sizeof(nus_data.data) - nus_data.len, buf->len);
+// 		int loc = 0;
 
-		while (plen > 0) {
-			memcpy(&nus_data.data[nus_data.len], &buf->data[loc], plen);
-			nus_data.len += plen;
-			loc += plen;
+// 		while (plen > 0) {
+// 			memcpy(&nus_data.data[nus_data.len], &buf->data[loc], plen);
+// 			nus_data.len += plen;
+// 			loc += plen;
 
-			if (nus_data.len >= sizeof(nus_data.data) ||
-			   (nus_data.data[nus_data.len - 1] == '\n') ||
-			   (nus_data.data[nus_data.len - 1] == '\r')) {
-				if (bt_nus_send(NULL, nus_data.data, nus_data.len)) {
-					LOG_WRN("Failed to send data over BLE connection");
-				}
-				nus_data.len = 0;
-			}
+// 			if (nus_data.len >= sizeof(nus_data.data) ||
+// 			   (nus_data.data[nus_data.len - 1] == '\n') ||
+// 			   (nus_data.data[nus_data.len - 1] == '\r')) {
+// 				if (bt_nus_send(NULL, nus_data.data, nus_data.len)) {
+// 					LOG_WRN("Failed to send data over BLE connection");
+// 				}
+// 				nus_data.len = 0;
+// 			}
 
-			plen = MIN(sizeof(nus_data.data), buf->len - loc);
-		}
+// 			plen = MIN(sizeof(nus_data.data), buf->len - loc);
+// 		}
 
-		k_free(buf);
-	}
-}
+// 		k_free(buf);
+// 	}
+// }
 
-K_THREAD_DEFINE(ble_write_thread_id, STACKSIZE, ble_write_thread, NULL, NULL,
-		NULL, PRIORITY, 0, 0);
+// K_THREAD_DEFINE(ble_write_thread_id, STACKSIZE, ble_write_thread, NULL, NULL,
+// 		NULL, PRIORITY, 0, 0);

@@ -623,26 +623,26 @@
 		i2c0_default: i2c0_default {
 			phandle = < 0x4 >;
 			group1 {
-				psels = < 0x18001a >, < 0x16001b >;
+				psels = < 0x18000d >, < 0x16000f >;
 			};
 		};
 		i2c0_sleep: i2c0_sleep {
 			phandle = < 0x5 >;
 			group1 {
-				psels = < 0x18001a >, < 0x16001b >;
+				psels = < 0x18000d >, < 0x16000f >;
 				low-power-enable;
 			};
 		};
 		i2c1_default: i2c1_default {
 			phandle = < 0x8 >;
 			group1 {
-				psels = < 0x18001e >, < 0x16001f >;
+				psels = < 0x18002a >, < 0x16002f >;
 			};
 		};
 		i2c1_sleep: i2c1_sleep {
 			phandle = < 0x9 >;
 			group1 {
-				psels = < 0x18001e >, < 0x16001f >;
+				psels = < 0x18002a >, < 0x16002f >;
 				low-power-enable;
 			};
 		};

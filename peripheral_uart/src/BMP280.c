@@ -17,7 +17,7 @@ void bmp280_init(const struct device *i2c_dev) {
 
     // Read Chip ID
     if (i2c_read_register(i2c_dev, BMP280_ADDR, BMP280_REG_CHIPID, &chip_id) != 0 || chip_id != 0x58) {
-        printk("Error: BMP280 not detected or invalid Chip ID\n");
+        printk("BMP280 not detected or invalid Chip ID\n");
         return;
     }
     printk("BMP280 detected. Chip ID: 0x%x\n", chip_id);
@@ -63,7 +63,7 @@ void read_bmp280_data(const struct device *i2c_dev) {
 
 
     if (i2c_read_registers(i2c_dev, BMP280_ADDR, BMP280_REG_PRESSURE_MSB, data, sizeof(data)) != 0) {
-        printk("Error: Failed to read BMP280 data\n");
+        printk("Failed to read BMP280 data\n");
         return;
     }
 
