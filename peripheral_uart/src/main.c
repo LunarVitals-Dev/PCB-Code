@@ -756,7 +756,7 @@ int main(void)
 		if(collect_data){
 			get_adc_data();
 			i2c_read_data();
-			max30102_read_data_spo2(&dev_max30102);
+			//max30102_read_data_spo2(&dev_max30102);
 		}
 		
         k_sleep(K_MSEC(1000));

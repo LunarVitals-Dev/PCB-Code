@@ -1066,7 +1066,6 @@ zephyr_udc0: &usbd {
     status = "okay";
     clock-frequency = <100000>;
 
-
 };
 
 &i2c1 {
