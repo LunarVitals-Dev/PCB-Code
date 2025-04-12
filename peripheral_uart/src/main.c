@@ -57,7 +57,7 @@ bool collect_data = true;
 
 static K_SEM_DEFINE(ble_init_ok, 0, 1);
 
-static const struct i2c_dt_spec dev_max30102 = MAX30102_DT_SPEC;
+//static const struct i2c_dt_spec dev_max30102 = MAX30102_DT_SPEC;
 
 static struct bt_conn *current_conn;
 static struct bt_conn *auth_conn;
@@ -746,7 +746,7 @@ int main(void)
 	    /* Verify ADC readiness */
     adc_init();
 	i2c_init();
-	max30102_default_setup(&dev_max30102);
+	// max30102_default_setup(&dev_max30102);
 	//-------------------------
     // Main loop to blink LED to indicate status
     for (;;) {

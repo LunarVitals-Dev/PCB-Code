@@ -1070,11 +1070,11 @@ zephyr_udc0: &usbd {
 
 &i2c1 {
     status = "okay";
- max30102: max30102@57 {
-        compatible = "i2c-device";
-        reg = <0x57>;
-        label = "MAX30102";
-    };
+
+
+
+
+
 };
 
 &adc {

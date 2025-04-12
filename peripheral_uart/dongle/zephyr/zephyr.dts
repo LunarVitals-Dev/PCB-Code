@@ -166,11 +166,6 @@
 			pinctrl-0 = < &i2c1_default >;
 			pinctrl-1 = < &i2c1_sleep >;
 			pinctrl-names = "default", "sleep";
-			max30102: max30102@57 {
-				compatible = "i2c-device";
-				reg = < 0x57 >;
-				label = "MAX30102";
-			};
 		};
 		spi1: spi@40004000 {
 			compatible = "nordic,nrf-spi";
