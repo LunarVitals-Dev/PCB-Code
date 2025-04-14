@@ -24,7 +24,7 @@ void bmp280_init(const struct device *i2c_dev) {
 
     // Reset the sensor
     i2c_write_register(i2c_dev, BMP280_ADDR, BMP280_REG_SOFTRESET, 0xB6);
-    k_sleep(K_MSEC(100));
+    k_sleep(K_MSEC(10));
 
     // Read calibration data
     uint8_t calib_data[24];

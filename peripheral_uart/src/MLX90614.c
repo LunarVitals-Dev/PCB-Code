@@ -17,13 +17,13 @@ int read_mlx90614_register(const struct device *i2c_dev, uint8_t reg_addr, uint1
 
 void mlx90614_init(const struct device *i2c_dev) {
     uint8_t device_id;
-    if (i2c_read_register(i2c_dev, MLX90614_ADDR, DEVICE_ID, &device_id) != 0) {
+    if (i2c_read_register(i2c_dev, MLX90614_ADDR, MLX_DEVICE_ID, &device_id) != 0) {
         printk("MLX90614 not detected! (device_id: 0x%02X)\n", device_id);
         return;
     }
 
     printk("MLX90614 detected (device_id: 0x%02X)\n", device_id);
-    k_msleep(100);
+    k_msleep(10);
 }
 
 void read_mlx90614_data(const struct device *i2c_dev) {
@@ -72,27 +72,3 @@ void read_mlx90614_data(const struct device *i2c_dev) {
     send_message_to_bluetooth(message);
 }
 
-// void read_mlx90614_data(const struct device *i2c_dev, char *buffer, size_t size) {
-//     uint16_t ambient_temp_raw, object_temp_raw;
-
-//     // Read ambient temperature
-//     if (read_mlx90614_register(i2c_dev, MLX90614_TA, &ambient_temp_raw) != 0) {
-//         snprintf(buffer, size, "\"MLX90614\": {\"Error\": \"Failed to read ambient temperature\"}");
-//         return;
-//     }
-
-//     // Read object temperature
-//     if (read_mlx90614_register(i2c_dev, MLX90614_TOBJ1, &object_temp_raw) != 0) {
-//         snprintf(buffer, size, "\"MLX90614\": {\"Error\": \"Failed to read object temperature\"}");
-//         return;
-//     }
-
-//     // Convert raw values to Celsius
-//     float ambient_temp = ambient_temp_raw * 0.02 - 273.15;
-//     float object_temp = object_temp_raw * 0.02 - 273.15;
-
-//     // Format the JSON object
-//     snprintf(buffer, size,
-//              "\"MLX90614\": {\"AmbientTemperature\": %.2f, \"ObjectTemperature\": %.2f}",
-//              ambient_temp, object_temp);
-// }

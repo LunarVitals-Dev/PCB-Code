@@ -11,7 +11,7 @@
 
 // MPU6050 Registers
 #define MPU6050_ADDR 0x68          // Default I2C address of MPU6050
-#define DEVICE_ID 0x75
+#define MPU_DEVICE_ID 0x75
 #define PWR_MGMT_1   0x6B
 #define ACCEL_XOUT_H 0x3B
 #define GYRO_XOUT_H  0x43

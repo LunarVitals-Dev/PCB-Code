@@ -27,7 +27,7 @@ static const uint8_t MAX30102_FIFO_WR_PTR        = 0x04;
 static const uint8_t MAX30102_FIFO_O_CNTR        = 0x05;
 static const uint8_t MAX30102_FIFO_RD_PTR        = 0x06;
 static const uint8_t MAX30102_FIFO_DATA          = 0x07;
-#define RATE_SIZE 4 //Increase this for more averaging. 4 is good.
+#define RATE_SIZE 4
 uint8_t rates[RATE_SIZE]; //Array of heart rates
 uint8_t rateSpot = 0;
 long lastBeat = 0; //Time at which the last beat occurred
@@ -230,20 +230,6 @@ int max30102_check(const struct i2c_dt_spec *dev_max30102)
 	return 6;
 }
 
-
-
-// I COMMENTED THIS OUT TO PUT IN .h FILE - ALLAN FEB 17
-#define BUFFERLENGTH 100
-
-int bufferLength = BUFFERLENGTH; //buffer length of 100 stores 4 seconds of samples running at 25sps
-int spo2 = 0;
-int heartRate = 0;
-int8_t validSPO2 = 0; //indicator to show if the SPO2 calculation is valid
-int8_t validHeartRate = 0; //indicator to show if the heart rate calculation is valid
-
-uint32_t irBuffer[BUFFERLENGTH]; // infrared LED sensor data
-uint32_t redBuffer[BUFFERLENGTH]; // red LED sensor data
-
 int gpio_led_setup(const struct gpio_dt_spec *led0) {
 	if(!gpio_is_ready_dt(led0)) printk("GPIO is not ready\n");
 	int ret = gpio_pin_configure_dt(led0, GPIO_OUTPUT);
@@ -282,135 +268,70 @@ void max30102_next_sample(void)
 
 int max_print_counter = 0;
 void max30102_read_data_hr(const struct i2c_dt_spec *dev_max30102){ // gets looped
-	
-	//while(true){
-		if (max30102_check(dev_max30102) == 0){
-			printk("No data\n");
+
+	if (max30102_check(dev_max30102) == 0){
+		printk("No data\n");
+	} else {
+
+		long irVal = sensor_data.ir[sensor_data.head_ptr];
+
+		// Check if the finger is on the sensor by looking at the IR value.
+		if (irVal < 100000) {
+			beatAvg = 0;
 		} else {
-
-			// ---------- Original HR Calculation ------------
-			long irVal = sensor_data.ir[sensor_data.head_ptr];
-
+			// Finger is detected on the sensor - proceed with beat detection
 			if (checkForBeat(irVal) == true) { // only uses IR value to calculate HR
-    			//We sensed a beat!
-    			long delta = k_uptime_get() - lastBeat;
-    			lastBeat = k_uptime_get();
-				//printk("Delta: %ld\n", delta);
-    			beatsPerMinute = 60 / (delta / 1000.0);
+				// We sensed a beat!
+				long delta = k_uptime_get() - lastBeat;
+				lastBeat = k_uptime_get();
+				beatsPerMinute = 60 / (delta / 1000.0);
 			
-    			if (beatsPerMinute < 255 && beatsPerMinute > 20) {
-    			  rates[rateSpot++] = (uint8_t)beatsPerMinute; //Store this reading in the array
-    			  rateSpot %= RATE_SIZE; //Wrap variable
-			
-    			  //Take average of readings
-    			  beatAvg = 0;
-    			  for (uint8_t x = 0 ; x < RATE_SIZE ; x++)
-    			    beatAvg += rates[x];
-    			  beatAvg /= RATE_SIZE;
-    			}
-  			}
-			// ---------- Original HR Calculation ------------
-
-
-
-			if(max_print_counter == 0){ 
-				char message[200];
-				int message_offset = 0;  
-
-				// Add start marker for the JSON object
-				message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
-
-				//printk(">Red:%d,IR:%d,BPM:%f,AvgBPM:%f\n", 
-				// sensor_data.red[sensor_data.head_ptr], 
-				// sensor_data.ir[sensor_data.head_ptr], beatsPerMinute, beatAvg);
-
-				// add to the message the spo2 and validSPO2
-				message_offset += snprintf(
-                    message + message_offset, sizeof(message) - message_offset,
-                    "\"MAX_Heart Rate Sensor\": {\"AvgBPM\": %d}",	
-                    beatAvg
-                );
-				 if (message_offset > 1) {
-					message[message_offset - 1] = '\0'; // Remove last comma
+				if (beatsPerMinute < 200 && beatsPerMinute > 30) {
+					rates[rateSpot++] = (uint8_t)beatsPerMinute; // Store this reading in the array
+					rateSpot %= RATE_SIZE; // Wrap around
+					
+					// Take the average of readings
+					beatAvg = 0;
+					for (uint8_t x = 0; x < RATE_SIZE; x++) {
+						beatAvg += rates[x];
+					}
+					beatAvg /= RATE_SIZE;
 				}
-
-				strcat(message, "}]");
-
-				// Print final JSON message
-				printf("%s\n", message); // CAN COMMENT THIS OUT AFTER TESTING
-
-				// Send the message over Bluetooth
-				send_message_to_bluetooth(message);
 			}
 		}
+		// ---------- Original HR Calculation ------------
+		if (max_print_counter == 0){
 
-		//k_sleep(K_MSEC(10));
-	//};
-	max_print_counter += 1;
-	max_print_counter = max_print_counter % 10;  
+			char message[200];
+			int message_offset = 0;  
+
+			// Add start marker for the JSON object
+			message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
+
+			// printk(">Red:%d,IR:%d", 
+			// sensor_data.red[sensor_data.head_ptr], 
+			// sensor_data.ir[sensor_data.head_ptr]);
+			
+			message_offset += snprintf(
+				message + message_offset, sizeof(message) - message_offset,
+				"\"MAX_Heart Rate Sensor\": {\"AvgBPM\": %d}",	
+				beatAvg
+			);
+				if (message_offset > 1) {
+				message[message_offset - 1] = '\0'; // Remove last comma
+			}
+
+			strcat(message, "}]");
+
+			// Print final JSON message
+			printf("%s\n", message); // CAN COMMENT THIS OUT AFTER TESTING
+
+			// Send the message over Bluetooth
+			send_message_to_bluetooth(message);
+		}
+		max_print_counter++;
+		max_print_counter %= 100; 
+	}
 }
 
 
-// GOING TO INTERGRATE THIS INTO READ HR DATA FUNCTION - ALLAN
-// int max_spo2_print_counter = 0;
-void max30102_read_data_spo2(const struct i2c_dt_spec * dev_max30102) //  Comment by Allan - (Refer to MAX30102.h file) this function used to have as a parameter: const struct gpio_dt_spec * led0
-{
-	for(int i = 0; i < bufferLength; i++)
-	{
-		while(max30102_available() == 0) max30102_check(dev_max30102);
-
-		redBuffer[i] = sensor_data.red[sensor_data.head_ptr];
-		irBuffer[i] = sensor_data.ir[sensor_data.head_ptr];
-		max30102_next_sample();
-
-		// printk(">red=%d, ir=%d\n", redBuffer[i], irBuffer[i]);
-	}
-
-	//calculate heart rate and SpO2 after first 100 samples (first 4 seconds of samples)
-	maxim_heart_rate_and_oxygen_saturation(irBuffer, bufferLength, redBuffer, &spo2, &validSPO2, &heartRate, &validHeartRate);
-
-	//print ir and red values
-	// printk("IR=%d, Red=%d\n", irBuffer[bufferLength-1], redBuffer[bufferLength-1]);
-
-	if (irBuffer[bufferLength-1] < 100000) { // checking IR value to see if finger is placed
-		spo2 = 0;
-	}
-	else{
-		if (spo2 < 90) {
-			//randomize an integer between 95 and 100
-			spo2 = 95 + (rand() % 6);
-		}
-	}
-
-	// if( max_spo2_print_counter == 0){ 
-		char message[200];
-		int message_offset = 0;  
-
-		// Add start marker for the JSON object
-		message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
-
-		//printk(">Red:%d,IR:%d,BPM:%f,AvgBPM:%f\n", 
-		// sensor_data.red[sensor_data.head_ptr], 
-		// sensor_data.ir[sensor_data.head_ptr], beatsPerMinute, beatAvg);
-
-		// add to the message the spo2 and validSPO2
-		message_offset += snprintf(
-			message + message_offset, sizeof(message) - message_offset,
-			"\"MAX_SPO2 Sensor\": {\"SPO2\": %d},",	
-			spo2
-		);
-		 if (message_offset > 1) {
-			message[message_offset - 1] = '\0'; // Remove last comma
-		}
-
-		strcat(message, "}]");
-
-		// Print final JSON message
-		printf("%s\n", message); // CAN COMMENT THIS OUT AFTER TESTING
-
-		// Send the message over Bluetooth
-		send_message_to_bluetooth(message);
-	// }
-	// max_spo2_print_counter += 1;
-	// max_spo2_print_counter = max_spo2_print_counter % 10;
-}

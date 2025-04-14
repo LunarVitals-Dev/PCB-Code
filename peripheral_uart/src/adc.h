@@ -38,8 +38,8 @@
 
 #define NUMOFADCCHANNELS 8
 static const struct adc_dt_spec adc_channels[NUMOFADCCHANNELS] = {
-    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 5), //5 
-    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 7), //7
+    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 7),  
+    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 5),
 };
 int32_t convert_to_mv(int16_t raw_value);
 void adc_init();

@@ -13,10 +13,9 @@
 #define MLX90614_ADDR 0x5A // Default I2C address of MLX90614
 #define MLX90614_TA 0x06 // Ambient temperature register
 #define MLX90614_TOBJ1 0x07 // Object 1 temperature register
-#define DEVICE_ID 0x2E // Device ID register
+#define MLX_DEVICE_ID 0x2E // Device ID register
 
 int read_mlx90614_register(const struct device *i2c_dev, uint8_t reg_addr, uint16_t *data);
 void read_mlx90614_data(const struct device *i2c_dev);
 void mlx90614_init(const struct device *i2c_dev);
-//void read_mlx90614_data(const struct device *i2c_dev, char *buffer, size_t size);
 #endif

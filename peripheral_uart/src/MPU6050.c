@@ -40,8 +40,8 @@ static int process_step_detection(float accel_x, float accel_y, float accel_z) {
     float totalvector = fabsf(vector - step_counter.vector_previous);
     
     // Print vector values for debugging
-    printk("Vector: %f, Previous Vector: %f, Difference: %f\n", 
-           vector, step_counter.vector_previous, totalvector);
+    // printk("Vector: %f, Previous Vector: %f, Difference: %f\n", 
+    //        vector, step_counter.vector_previous, totalvector);
     
     // Get current time in milliseconds
     uint32_t current_time = k_uptime_get_32();
@@ -64,13 +64,13 @@ void mpu6050_init(const struct device *i2c_dev) {
     uint8_t device_id;
 
     // Read device_id register
-    if (i2c_read_register(i2c_dev, MPU6050_ADDR, DEVICE_ID, &device_id) != 0) {
+    if (i2c_read_register(i2c_dev, MPU6050_ADDR, MPU_DEVICE_ID, &device_id) != 0) {
         printk("MPU6050 not detected! (device_id: 0x%02X)\n", device_id);
         return;
     }
 
     printk("MPU6050 detected (device_id: 0x%02X)\n", device_id);
-    k_msleep(100);
+    k_msleep(10);
 
     // Wake up MPU6050 by writing 0x00 to PWR_MGMT_1
     if (i2c_write_register(i2c_dev, MPU6050_ADDR, PWR_MGMT_1, 0x00) != 0) {
@@ -111,7 +111,7 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         );
     } else {
         printk("Failed to read MPU6050 data\n");
-         return;
+        return;
     }
 
     // Read gyroscope data (6 bytes)
