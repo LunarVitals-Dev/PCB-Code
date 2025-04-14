@@ -7,13 +7,11 @@
     * It uses algorithms developed by Nathan Seidle of Sparkfun Electronics as 
     * adapted in `heart_rate.c/h` and `spo2_algorithm.c/h`.
     * 
-    * TODO: need to clean this up and add more functionality
 */
 
 #include "MAX30102.h"
 #include "i2c.h"
 #include "heart_rate.h"
-#include "spo2_algorithm.h"
 
 static const uint8_t MAX30102_FIFO_CONFIG        = 0x08;
 static const uint8_t MAX30102_MODE_CONFIG        = 0x09;
@@ -286,7 +284,7 @@ void max30102_read_data_hr(const struct i2c_dt_spec *dev_max30102){ // gets loop
 				lastBeat = k_uptime_get();
 				beatsPerMinute = 60 / (delta / 1000.0);
 			
-				if (beatsPerMinute < 200 && beatsPerMinute > 30) {
+				if (beatsPerMinute < 160 && beatsPerMinute > 40) {
 					rates[rateSpot++] = (uint8_t)beatsPerMinute; // Store this reading in the array
 					rateSpot %= RATE_SIZE; // Wrap around
 					

@@ -36,12 +36,12 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/adc.h>
 
-#define NUMOFADCCHANNELS 8
-static const struct adc_dt_spec adc_channels[NUMOFADCCHANNELS] = {
-    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 7),  
+static const struct adc_dt_spec adc_channels[8] = {
+    ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 7),
     ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 5),
 };
 int32_t convert_to_mv(int16_t raw_value);
 void adc_init();
+void get_adc_data();
 
 #endif

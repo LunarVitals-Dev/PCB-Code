@@ -201,7 +201,7 @@ void adc_init(){
 
 
 	for(int i = 0; i < NUMOFADCCHANNELS; i++){
-		int err;
+		int err = 0;
 		const struct adc_dt_spec *adc_channel = &adc_channels[i];
 		if (!adc_is_ready_dt(adc_channel)) {
 			printf("ADC controller device %s not ready\n", adc_channel->dev->name);
@@ -234,7 +234,7 @@ void get_adc_data() {
     for (int i = 0; i < NUMOFADCCHANNELS; i++) {
         const struct adc_dt_spec *adc_channel = &adc_channels[i];
 
-                // Update the ADC sequence to select only this channel
+        // Update the ADC sequence to select only this channel
         sequence.channels = BIT(adc_channel->channel_id); 
         // Read ADC data for the current channel
         int err1 = adc_read(adc_channel->dev, &sequence);
@@ -244,15 +244,12 @@ void get_adc_data() {
             // Convert the raw value to millivolts
             int32_t val_mv = convert_to_mv(buf);
             
-            // Get the current uptime in milliseconds
-            uint32_t timestamp = k_uptime_get();
-            
             // Append to JSON message
             if (i == 0) {//Respiratory Senosr
 
                  // Apply Moving Average Filter
                 int32_t moving_avg_breath = moving_average_filter_breath(&prev_val_moving_avg_breath, val_mv);
-                float BRPM = prev_BRPM;
+                int32_t BRPM = prev_BRPM;
                 //printf(">m:%d\n", moving_avg); // Moving average value
 
                 // Breathing rate calculation
@@ -275,16 +272,16 @@ void get_adc_data() {
                 prev_val_moving_avg_breath = moving_avg_breath;
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
-                    "\"RespiratoryRate\": {\"avg_mV\": %.2f, \"BRPM\": %.2f},",
-                    moving_avg_breath/3300.0, BRPM
+                    "\"RespiratoryRate\": {\"avg_mV\": %d, \"BRPM\": %d},",
+                    moving_avg_breath, BRPM
                 );
 
                 prev_BRPM = BRPM;
             } else if (i == 1) {// Pulse Sensor
 
-                int final_bpm = previous_bpm;
+                int32_t final_bpm = previous_bpm;
                     // Filtering code
-                int32_t edge_enhanced = derivative_filter(val_mv, prev_sample);
+                derivative_filter(val_mv, prev_sample);
                 prev_sample = val_mv;
 
                                 // BPM calculation
@@ -310,8 +307,8 @@ void get_adc_data() {
 
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
-                    "\"PulseSensor\": {\"Value_mV\": %.2f, \"pulse_BPM\": %d},",
-                    val_mv/3300.0, final_bpm
+                    "\"PulseSensor\": {\"Value_mV\": %d, \"pulse_BPM\": %d},",
+                    val_mv, final_bpm
                 );
             }
         }

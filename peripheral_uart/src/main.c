@@ -758,11 +758,10 @@ int main(void)
 			i2c_read_data();
 			for (int i = 0; i < 100; i++) {
 				max30102_read_data_hr(&dev_max30102);
-				k_sleep(K_MSEC(10));
 			}
 		}
 		
-        k_sleep(K_MSEC(100));
+        k_sleep(K_MSEC(1000));
     }
 
 }
