@@ -15,6 +15,7 @@
 #define NUMOFADCCHANNELS 2
 /* ADC channel configuration via Device Tree */
 
+extern void send_message_to_bluetooth(const char *message);
 
 /* ADC buffer and sequence configuration */
 static int16_t buf;
@@ -128,7 +129,7 @@ float calculate_breathing_rate_new(void) {
     float avg_period = (float)sum_intervals / interval_count;
 
     // Convert average period to breaths per minute
-    return 60000.0 / avg_period; // 60000 ms per minute
+    return 60000.0f / avg_period; // 60000 ms per minute
 }
 // ------- Breathing Rate Calculation ------------------------------
 
@@ -187,7 +188,7 @@ float calculate_BPM(void) {
     float avg_period = (float)sum_intervals / interval_count;
 
     // Convert average period to beats per minute
-    return 60000.0 / avg_period; // 60000 ms per minute
+    return 60000.0f / avg_period; // 60000 ms per minute
 }
 // ------- Heart Rate Calculation ------------------------------
 
