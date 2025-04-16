@@ -32,7 +32,7 @@
 
 
 // Global buffer to store the current message
-static char gatt_string_msg[100] = "Hello, World!";
+static char gatt_string_msg[2048] = "Hello, World!";
 
 static const struct bt_data ad[] = {
 	BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
@@ -62,7 +62,7 @@ static ssize_t write_gatt_string(struct bt_conn *conn,
                                  uint16_t offset, 
                                  uint8_t flags)
 {
-    char value[100]; // Adjust size as needed
+    char value[2048]; // Adjust size as needed
     memcpy(value, buf, len);
     value[len] = '\0'; // Ensure null termination
     printk("Received string: %s\n", value);
@@ -148,12 +148,12 @@ static struct bt_conn_auth_cb auth_cb_display = {
 // }
 
 
-static void send_gatt_string(void)
-{
-    const char *msg = "Hello, World This is Lunar Vitals!";
-    bt_gatt_notify(NULL, &gatt_service.attrs[1], msg, strlen(msg));
-    printk("Sent: %s\n", msg);
-}
+// static void send_gatt_string(void)
+// {
+//     const char *msg = "Hello, World This is Lunar Vitals!";
+//     bt_gatt_notify(NULL, &gatt_service.attrs[1], msg, strlen(msg));
+//     printk("Sent: %s\n", msg);
+// }
 
 
 
@@ -192,7 +192,7 @@ bool collect_data = true;
 
 static K_SEM_DEFINE(ble_init_ok, 0, 1);
 
-static const struct i2c_dt_spec dev_max30102 = MAX30102_DT_SPEC;
+// static const struct i2c_dt_spec dev_max30102 = MAX30102_DT_SPEC;
 
 
 void button_changed(uint32_t button_state, uint32_t has_changed)
@@ -294,22 +294,22 @@ int main(void)
 	    /* Verify ADC readiness */
     adc_init();
 	i2c_init();
-	max30102_default_setup(&dev_max30102);
+	// max30102_default_setup(&dev_max30102);
 	//-------------------------
     // Main loop to blink LED to indicate status
-    for (;;) {
+    while(1) {
 		//printk(".\n");
-		send_gatt_string();
+		//send_gatt_string();
 		dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		if(collect_data){
-			get_adc_data();
 			i2c_read_data();
-			for (int i = 0; i < 100; i++) {
-				max30102_read_data_hr(&dev_max30102);
-			}
+			get_adc_data();
+			// for (int i = 0; i < 10; i++) {
+			// 	max30102_read_data_hr(&dev_max30102);
+			// }
 		 }
 		
-        k_sleep(K_MSEC(1000));
+        k_sleep(K_MSEC(100));
     }
 
 }

@@ -8,6 +8,7 @@
  *  @brief Nordic UART Bridge Service (NUS) sample
  */
 #include "adc.h"
+#include "aggregator.h"
 
 #define ADC_REF_VOLTAGE_MV 600 // Internal reference in mV
 #define ADC_GAIN (1.0 / 6.0)    // Gain of 1/6
@@ -134,9 +135,9 @@ float calculate_breathing_rate_new(void) {
 // ------- Breathing Rate Calculation ------------------------------
 
 // ------- Heart Rate Calculation ------------------------------
-#define BEAT_THRESHOLD 80   // Minimum change to detect a breath
-#define MAX_PEAKS 15            // Circular buffer for peak timestamps
-#define MIN_PEAK_INTERVAL_MS 500 // Minimum interval between peaks for valid BPM calculation 
+#define BEAT_THRESHOLD 80   // Minimum change to detect a beat
+#define MAX_PEAKS 20            // Circular buffer for peak timestamps
+#define MIN_PEAK_INTERVAL_MS 600 // Minimum interval between peaks for valid BPM calculation 
 
 // Detect peaks
 bool detect_peak(int32_t current_value, int32_t prev_value, bool *rising) {
@@ -226,11 +227,11 @@ void adc_init(){
 }
 
 void get_adc_data() {
-    char message[200];
+    char message[400];
     int message_offset = 0;  
 
     // Add start marker for the JSON object
-    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
+    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
 
     for (int i = 0; i < NUMOFADCCHANNELS; i++) {
         const struct adc_dt_spec *adc_channel = &adc_channels[i];
@@ -271,6 +272,7 @@ void get_adc_data() {
                     }
                 }
                 prev_val_moving_avg_breath = moving_avg_breath;
+
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
                     "\"RespiratoryRate\": {\"avg_mV\": %d, \"BRPM\": %d},",
@@ -278,15 +280,16 @@ void get_adc_data() {
                 );
 
                 prev_BRPM = BRPM;
+
             } else if (i == 1) {// Pulse Sensor
 
                 int32_t final_bpm = previous_bpm;
                     // Filtering code
-                derivative_filter(val_mv, prev_sample);
+                int32_t edge_enhanced = derivative_filter(val_mv, prev_sample);
                 prev_sample = val_mv;
 
                                 // BPM calculation
-                if (detect_peak(val_mv, previous_val, &rising)) {
+                if (detect_peak(edge_enhanced, previous_val, &rising)) {
                     uint32_t current_time = k_uptime_get(); // Get current uptime in milliseconds
 
                     // Check if enough time has passed since the last peak
@@ -303,27 +306,24 @@ void get_adc_data() {
                         } 
                     }
                 }
-                previous_val = val_mv;
+                previous_val = edge_enhanced;
 
-
+                // Append to JSON message
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
-                    "\"PulseSensor\": {\"Value_mV\": %d, \"pulse_BPM\": %d},",
+                    "\"PulseSensor\": {\"Value_mV\": %d, \"pulse_BPM\": %d}",
                     val_mv, final_bpm
                 );
             }
         }
     }
-     // Remove trailing comma and close JSON object
-    if (message_offset > 1) {
-        message[message_offset - 1] = '\0'; // Remove last comma
-    }
 
-    strcat(message, "}]");
+    // Close the JSON object.
+    strncat(message, "}", sizeof(message) - strlen(message) - 1);
+  
+    // Instead of sending immediately, add this sensor's message to the aggregator.
+    aggregator_add_data(message);
 
     // Print final JSON message
-    printf("%s\n", message);
-
-    // Send the message over Bluetooth
-    send_message_to_bluetooth(message);
+    // printf("%s\n", message);
 }

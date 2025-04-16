@@ -12,6 +12,7 @@
 #include "MAX30102.h"
 #include "i2c.h"
 #include "heart_rate.h"
+#include "aggregator.h"
 
 static const uint8_t MAX30102_FIFO_CONFIG        = 0x08;
 static const uint8_t MAX30102_MODE_CONFIG        = 0x09;
@@ -304,7 +305,7 @@ void max30102_read_data_hr(const struct i2c_dt_spec *dev_max30102){ // gets loop
 			int message_offset = 0;  
 
 			// Add start marker for the JSON object
-			message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
+			message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
 
 			// printk(">Red:%d,IR:%d", 
 			// sensor_data.red[sensor_data.head_ptr], 
@@ -315,20 +316,19 @@ void max30102_read_data_hr(const struct i2c_dt_spec *dev_max30102){ // gets loop
 				"\"MAX_Heart Rate Sensor\": {\"AvgBPM\": %d}",	
 				beatAvg
 			);
-				if (message_offset > 1) {
-				message[message_offset - 1] = '\0'; // Remove last comma
-			}
 
-			strcat(message, "}]");
+			// Close the JSON object.
+			strncat(message, "}", sizeof(message) - strlen(message) - 1);
+  
+			// Instead of sending immediately, add this sensor's message to the aggregator.
+			aggregator_add_data(message);
 
 			// Print final JSON message
-			printf("%s\n", message); // CAN COMMENT THIS OUT AFTER TESTING
+			// printf("%s\n", message); 
 
-			// Send the message over Bluetooth
-			send_message_to_bluetooth(message);
 		}
 		max_print_counter++;
-		max_print_counter %= 100; 
+		max_print_counter %= 10; 
 	}
 }
 

@@ -4,6 +4,7 @@
 #include <zephyr/kernel.h>
 #include "mlx90614.h"
 #include "i2c.h"
+#include "aggregator.h"
 
 int read_mlx90614_register(const struct device *i2c_dev, uint8_t reg_addr, uint16_t *data) {
     uint8_t buffer[3];
@@ -33,7 +34,7 @@ void read_mlx90614_data(const struct device *i2c_dev) {
     int message_offset = 0;
     
     // Start JSON object
-    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
+    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
 
     // Read ambient temperature
     if (read_mlx90614_register(i2c_dev, MLX90614_TA, &ambient_temp_raw) == 0) {
@@ -53,22 +54,22 @@ void read_mlx90614_data(const struct device *i2c_dev) {
         object_temp = object_temp_raw * 0.02 - 273.15; // Convert to Celsius
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"MLX_ObjectTemperature\": {\"Celsius\": %.2f},",
+            "\"MLX_ObjectTemperature\": {\"Celsius\": %.2f}",
             object_temp
         );
     } else {
         printk("Failed to read object temperature\n");
-         return;
+        return;
     }
 
-    // Remove trailing comma if necessary and close JSON object
-    if (message_offset > 1 && message[message_offset - 1] == ',') {
-        message[message_offset - 1] = '\0'; // Replace last comma with null terminator
-    }
-    strcat(message, "}]");
+    // Close the JSON object.
+    strncat(message, "}", sizeof(message) - strlen(message) - 1);
+  
+    // Instead of sending immediately, add this sensor's message to the aggregator.
+    aggregator_add_data(message);
 
     // Print or send JSON message
-    printf("%s\n", message);
-    send_message_to_bluetooth(message);
+    // printf("%s\n", message);
+
 }
 

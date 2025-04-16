@@ -1,5 +1,8 @@
 {
     "nrf-connect.applications": [
         "${workspaceFolder}\\peripheral_uart"
-    ]
+    ],
+    "files.associations": {
+        "aggregator.h": "c"
+    }
 }

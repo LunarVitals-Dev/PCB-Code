@@ -4,6 +4,7 @@
 #include <zephyr/kernel.h>
 #include "bmp280.h"
 #include "i2c.h"
+#include "aggregator.h"
 
 // Calibration parameters
 uint16_t dig_T1;
@@ -58,7 +59,7 @@ void bmp280_init(const struct device *i2c_dev) {
 
 void read_bmp280_data(const struct device *i2c_dev) {
     uint8_t data[6];
-    char message[200];
+    char message[400];
     int message_offset = 0;
 
 
@@ -97,7 +98,7 @@ void read_bmp280_data(const struct device *i2c_dev) {
     int pressure = p / 25600;  // Convert to hPa
 
     // Create JSON message
-    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
+    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
     message_offset += snprintf(
         message + message_offset, sizeof(message) - message_offset,
         "\"BMP_Temperature\": {\"Celsius\": %.2f},",
@@ -108,7 +109,12 @@ void read_bmp280_data(const struct device *i2c_dev) {
         "\"BMP_Pressure\": {\"hPa\": %d}",
         pressure
     );
-    strcat(message, "}]");
-    printf("%s\n", message);
-    send_message_to_bluetooth(message);
+
+    // Close the JSON object.
+    strncat(message, "}", sizeof(message) - strlen(message) - 1);
+  
+    // Instead of sending immediately, add this sensor's message to the aggregator.
+    aggregator_add_data(message);
+
+    // printf("%s\n", message);
 }

@@ -162,4 +162,3 @@ cython_debug/
 #.idea/
 
 peripheral_uart/dongle/
-!peripheral_uart/dongle/zephyr/zephyr.hex

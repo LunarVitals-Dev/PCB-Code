@@ -5,6 +5,7 @@
 #include <math.h>
 #include "mpu6050.h"
 #include "i2c.h"
+#include "aggregator.h"
 
 // Step counter structure
 typedef struct {
@@ -87,10 +88,10 @@ void read_mpu6050_data(const struct device *i2c_dev) {
     int16_t accel_x, accel_y, accel_z;
     int16_t gyro_x, gyro_y, gyro_z;
     uint8_t data[6];
-    char message[300];
+    char message[400];
     int message_offset = 0;
     // Start JSON object
-    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "[{");
+    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
     // Read accelerometer data (6 bytes)
     if (i2c_read_registers(i2c_dev, MPU6050_ADDR, ACCEL_XOUT_H, data, 6) == 0) {
         accel_x = (int16_t)((data[0] << 8) | data[1]);
@@ -106,7 +107,7 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         //printk("Accelerometer (g): X=%.2f, Y=%.2f, Z=%.2f\n", step_counter.accel_x, step_counter.accel_y, step_counter.accel_z);
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"MPU_Accelerometer\": {\"X_g\": %.4f, \"Y_g\": %.4f, \"Z_g\": %.4f, \"steps\": %d},",
+            "\"MPU_Accelerometer\": {\"X_g\": %.2f, \"Y_g\": %.2f, \"Z_g\": %.2f, \"steps\": %d},",
             step_counter.accel_x, step_counter.accel_y, step_counter.accel_z, steps
         );
     } else {
@@ -129,24 +130,23 @@ void read_mpu6050_data(const struct device *i2c_dev) {
 
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"MPU_Gyroscope\": {\"X_deg_per_s\": %.2f, \"Y_deg_per_s\": %.2f, \"Z_deg_per_s\": %.2f},",
+            "\"MPU_Gyroscope\": {\"X_deg_per_s\": %.2f, \"Y_deg_per_s\": %.2f, \"Z_deg_per_s\": %.2f}",
             step_counter.gyro_x, step_counter.gyro_y,step_counter.gyro_z
         );
        
         
     } else {
         printk("Failed to read gyroscope data\n");
-         return;
+        return;
     }
 
-    // Remove trailing comma if necessary and close JSON object
-    if (message_offset > 1 && message[message_offset - 1] == ',') {
-        message[message_offset - 1] = '\0'; // Replace last comma with null terminator
-    }
-    strcat(message, "}]");
-    // Print or send JSON message
-    printf("%s\n", message);
-    send_message_to_bluetooth(message);
+    // Close the JSON object.
+    strncat(message, "}", sizeof(message) - strlen(message) - 1);
+  
+    // Instead of sending immediately, add this sensor's message to the aggregator.
+    aggregator_add_data(message);
+    
+    // printf("%s\n", message);
     // Process acceleration and gyroscope data for step detection
 }
 
