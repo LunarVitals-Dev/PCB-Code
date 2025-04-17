@@ -32,7 +32,7 @@
 
 
 // Global buffer to store the current message
-static char gatt_string_msg[2048] = "Hello, World!";
+static char gatt_string_msg[1500] = "Hello, World!";
 
 static const struct bt_data ad[] = {
 	BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
@@ -62,7 +62,7 @@ static ssize_t write_gatt_string(struct bt_conn *conn,
                                  uint16_t offset, 
                                  uint8_t flags)
 {
-    char value[2048]; // Adjust size as needed
+    char value[1500]; // Adjust size as needed
     memcpy(value, buf, len);
     value[len] = '\0'; // Ensure null termination
     printk("Received string: %s\n", value);

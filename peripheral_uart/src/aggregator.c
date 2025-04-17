@@ -3,8 +3,8 @@
 #include <string.h>
 
 // Adjust these definitions as necessary.
-#define TOTAL_SENSORS 3         // Total number of sensor messages expected per cycle.
-#define AGG_BUFFER_SIZE 2048    // The size of the aggregation buffer.
+#define TOTAL_SENSORS 4         // Total number of sensor messages expected per cycle.
+#define AGG_BUFFER_SIZE 1500    // The size of the aggregation buffer.
 
 // Global buffer for aggregation and a counter for received messages.
 static char aggregated_sensor_data[AGG_BUFFER_SIZE];
