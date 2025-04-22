@@ -32,6 +32,8 @@ void read_mlx90614_data(const struct device *i2c_dev) {
     float ambient_temp = 0.0, object_temp = 0.0;
     char message[200];
     int message_offset = 0;
+
+    memset(message, 0, sizeof(message));
     
     // Start JSON object
     message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");

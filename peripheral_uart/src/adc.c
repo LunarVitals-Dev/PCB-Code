@@ -230,6 +230,8 @@ void get_adc_data() {
     char message[400];
     int message_offset = 0;  
 
+    memset(message, 0, sizeof(message));
+
     // Add start marker for the JSON object
     message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
 

@@ -7,6 +7,7 @@
 #include "i2c.h"
 #include "aggregator.h"
 
+#define MAX_STEP_HISTORY 50 // Maximum number of steps to store in history
 // Step counter structure
 typedef struct {
     uint32_t last_step_time;
@@ -18,9 +19,29 @@ typedef struct {
     float gyro_x;
     float gyro_y;
     float gyro_z;
+
+    float rate;
+
+    uint32_t step_timestamps[MAX_STEP_HISTORY]; // Store timestamps of the last 10 steps
+    int step_history_index; // Index for the step history
 } StepCounter;
 
 static StepCounter step_counter;
+
+float calculate_step_rate(void){
+
+    int count = 0;
+    uint32_t current_time = k_uptime_get_32();
+
+    for (int i = 0; i < MAX_STEP_HISTORY; i++) {
+        uint32_t timestamp = step_counter.step_timestamps[i];
+        if (timestamp != 0 && (current_time - timestamp) <= 10000) { // Only consider steps within the last 10 seconds
+            count++;
+        }
+    }
+
+    return (float)count; 
+}
 
 // Initialize the step counter
 static void init_step_counter(void) {
@@ -29,7 +50,7 @@ static void init_step_counter(void) {
     step_counter.vector_previous = 0;
 }
 
-static int process_step_detection(float accel_x, float accel_y, float accel_z) {
+static void process_step_detection(float accel_x, float accel_y, float accel_z) {
     // Calculate the total acceleration vector magnitude
     float vector = sqrtf(
         accel_x * accel_x + 
@@ -48,17 +69,21 @@ static int process_step_detection(float accel_x, float accel_y, float accel_z) {
     uint32_t current_time = k_uptime_get_32();
     
     // Detect step using the rate of change threshold
-    if (totalvector > 0.15f && 
-        (current_time - step_counter.last_step_time) > 600) {
+    if (totalvector > 0.2f && 
+        (current_time - step_counter.last_step_time) > 500) {
         step_counter.step_count++;
         step_counter.last_step_time = current_time;
-        printk("Total steps: %d\n", step_counter.step_count);
+
+        //store the timestamp in circular buffer
+        step_counter.step_timestamps[step_counter.step_history_index] = current_time;
+        step_counter.step_history_index = (step_counter.step_history_index + 1) % MAX_STEP_HISTORY; // Circular buffer
+
+        step_counter.rate = calculate_step_rate();
+        // printk("Total steps: %d\n", step_counter.step_count);
     }
     
     // Store current vector as previous for next iteration
     step_counter.vector_previous = vector;
-    
-    return step_counter.step_count;
 }
 
 void mpu6050_init(const struct device *i2c_dev) {
@@ -88,8 +113,11 @@ void read_mpu6050_data(const struct device *i2c_dev) {
     int16_t accel_x, accel_y, accel_z;
     int16_t gyro_x, gyro_y, gyro_z;
     uint8_t data[6];
-    char message[400];
+    char message[500];
     int message_offset = 0;
+
+    memset(message, 0, sizeof(message));
+    
     // Start JSON object
     message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
     // Read accelerometer data (6 bytes)
@@ -102,13 +130,13 @@ void read_mpu6050_data(const struct device *i2c_dev) {
         step_counter.accel_y = (float)accel_y / 16384.0f;
         step_counter.accel_z = (float)accel_z / 16384.0f;
 
-        int steps = process_step_detection(step_counter.accel_x, step_counter.accel_y, step_counter.accel_z);
+        process_step_detection(step_counter.accel_x, step_counter.accel_y, step_counter.accel_z);
 
         //printk("Accelerometer (g): X=%.2f, Y=%.2f, Z=%.2f\n", step_counter.accel_x, step_counter.accel_y, step_counter.accel_z);
         message_offset += snprintf(
             message + message_offset, sizeof(message) - message_offset,
-            "\"MPU_Accelerometer\": {\"X_g\": %.2f, \"Y_g\": %.2f, \"Z_g\": %.2f, \"steps\": %d},",
-            step_counter.accel_x, step_counter.accel_y, step_counter.accel_z, steps
+            "\"MPU_Accelerometer\": {\"X_g\": %.2f, \"Y_g\": %.2f, \"Z_g\": %.2f, \"steps\": %d, \"rate\": %.1f},",
+            step_counter.accel_x, step_counter.accel_y, step_counter.accel_z, step_counter.step_count, step_counter.rate
         );
     } else {
         printk("Failed to read MPU6050 data\n");

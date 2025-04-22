@@ -62,6 +62,7 @@ void read_bmp280_data(const struct device *i2c_dev) {
     char message[400];
     int message_offset = 0;
 
+    memset(message, 0, sizeof(message));
 
     if (i2c_read_registers(i2c_dev, BMP280_ADDR, BMP280_REG_PRESSURE_MSB, data, sizeof(data)) != 0) {
         printk("Failed to read BMP280 data\n");

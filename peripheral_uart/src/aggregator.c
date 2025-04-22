@@ -2,52 +2,69 @@
 #include <stdio.h>
 #include <string.h>
 
-// Adjust these definitions as necessary.
-#define TOTAL_SENSORS 4         // Total number of sensor messages expected per cycle.
-#define AGG_BUFFER_SIZE 1500    // The size of the aggregation buffer.
+// Total number of sensor messages per JSON array
+#define TOTAL_SENSORS    4
+// Maximum size of the aggregation buffer
+#define AGG_BUFFER_SIZE 1500
 
-// Global buffer for aggregation and a counter for received messages.
+// Buffer to build the JSON array, and counter for accumulated messages
 static char aggregated_sensor_data[AGG_BUFFER_SIZE];
 static int sensors_received = 0;
 
-// Declare external function. This is your existing Bluetooth send function.
+// External BLE send function (implemented elsewhere)
 extern void send_message_to_bluetooth(const char *msg);
 
-// Initialize the aggregator. This starts (or resets) the JSON aggregation.
+// Initialize or reset the JSON aggregation
 void aggregator_init(void) {
-    // Start a JSON array. (Alternatively, if you prefer an object, you could use "{" and "}")
+    memset(aggregated_sensor_data, 0, AGG_BUFFER_SIZE);
     strcpy(aggregated_sensor_data, "[");
     sensors_received = 0;
 }
 
-// This function appends sensor data to the aggregated buffer.
+// Append a sensor's JSON snippet. Only accumulates up to TOTAL_SENSORS items
 void aggregator_add_data(const char *sensor_msg) {
-    // If not the first sensor, add a comma separator.
+    if (sensors_received >= TOTAL_SENSORS) {
+        // Already have all expected sensors for this cycle
+        return;
+    }
+
     if (sensors_received > 0) {
-        strncat(aggregated_sensor_data, ",", AGG_BUFFER_SIZE - strlen(aggregated_sensor_data) - 1);
+        strncat(
+            aggregated_sensor_data,
+            ",",
+            AGG_BUFFER_SIZE - strlen(aggregated_sensor_data) - 1
+        );
     }
-    
-    // Append the sensor's JSON snippet.
-    strncat(aggregated_sensor_data, sensor_msg, AGG_BUFFER_SIZE - strlen(aggregated_sensor_data) - 1);
+
+    strncat(
+        aggregated_sensor_data,
+        sensor_msg,
+        AGG_BUFFER_SIZE - strlen(aggregated_sensor_data) - 1
+    );
     sensors_received++;
-    
-    // If all sensor data has been collected...
-    if (sensors_received == TOTAL_SENSORS) {
-        // Close the JSON array.
-        strncat(aggregated_sensor_data, "]", AGG_BUFFER_SIZE - strlen(aggregated_sensor_data) - 1);
-        // Send the aggregated data via your core Bluetooth function.
-        send_message_to_bluetooth(aggregated_sensor_data);
-        // Reset for the next cycle.
-        aggregator_init();
-    }
 }
 
-// Optionally, if you need to send out data even when you haven't received all messages.
+// Finalize the JSON array, send over BLE, then reset for next cycle
 void aggregator_finalize_and_send(void) {
-    // Ensure the JSON array is closed.
-    if (aggregated_sensor_data[strlen(aggregated_sensor_data) - 1] != ']') {
-        strncat(aggregated_sensor_data, "]", AGG_BUFFER_SIZE - strlen(aggregated_sensor_data) - 1);
+    if (sensors_received == 0) {
+        // Nothing to send
+        return;
     }
+
+    size_t len = strlen(aggregated_sensor_data);
+
+    // Ensure it ends with a closing bracket
+    if (aggregated_sensor_data[len - 1] != ']') {
+        strncat(
+            aggregated_sensor_data,
+            "]",
+            AGG_BUFFER_SIZE - strlen(aggregated_sensor_data) - 1
+        );
+    }
+
+    // Send the complete JSON array
     send_message_to_bluetooth(aggregated_sensor_data);
+
+    // Reset for the next cycle
     aggregator_init();
 }

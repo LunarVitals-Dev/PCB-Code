@@ -11,6 +11,7 @@
 #include "BMP280.h"
 #include "MAX30102.h"
 #include "heart_rate.h"
+#include "aggregator.h"
 #include "i2c.h"
 
 //------------bluetooth---------------
@@ -82,7 +83,7 @@ BT_GATT_SERVICE_DEFINE(gatt_service,
     BT_GATT_CHARACTERISTIC(BT_UUID_GATT_STRING,
                            BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE | BT_GATT_CHRC_NOTIFY, 
                            BT_GATT_PERM_READ | BT_GATT_PERM_WRITE,
-                           read_gatt_string, write_gatt_string, NULL),
+                           read_gatt_string, write_gatt_string, gatt_string_msg),
 	BT_GATT_CCC(notify_subscribe_cb, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE)
 );
 
@@ -290,6 +291,8 @@ int main(void)
     bt_conn_auth_cb_register(&auth_cb_display);
 	printk("UUID (16-bit): 0x%04X\n", BT_UUID_GATT_STRING_VAL);
 	//------------bluetooth---------------
+	int64_t last_send = k_uptime_get();
+	aggregator_init();
 	//----------------------
 	    /* Verify ADC readiness */
     adc_init();
@@ -307,7 +310,13 @@ int main(void)
 			// for (int i = 0; i < 10; i++) {
 			// 	max30102_read_data_hr(&dev_max30102);
 			// }
-		 }
+		}
+
+		int64_t now = k_uptime_get();
+        if (now - last_send >= 1000) {
+            aggregator_finalize_and_send();
+            last_send = now;
+        }
 		
         k_sleep(K_MSEC(100));
     }
