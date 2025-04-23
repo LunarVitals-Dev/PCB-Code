@@ -1,6 +1,6 @@
 (sym_lib_table
   (version 7)
   (lib (name "TP4056")(type "KiCad")(uri "${KIPRJMOD}/customlib/TP4056.kicad_sym")(options "")(descr ""))
-  (lib (name "FS8205A")(type "KiCad")(uri "${KIPRJMOD}/customlib/FS8205A.kicad_sym")(options "")(descr ""))
+  (lib (name "FS8205A")(type "KiCad")(uri "${KIPRJMOD}/customlib/FS8205.kicad_sym")(options "")(descr ""))
   (lib (name "MLX90614")(type "KiCad")(uri "${KIPRJMOD}/customlib/MLX90614ESF-AAA-000-TU.kicad_sym")(options "")(descr ""))
 )
