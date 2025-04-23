@@ -6587,6 +6587,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C158012"
+			(at 96.52 180.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "a0d4ff28-b35f-4561-b916-173eda7811ad")
 		)
@@ -7250,7 +7259,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C491709"
+		(property "LCSC" "C144395"
 			(at 38.1 180.34 0)
 			(effects
 				(font
@@ -8876,6 +8885,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C160402"
+			(at 189.23 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "c3e17f3b-7649-4d63-8c71-185bb83247ed")
 		)
@@ -10395,16 +10413,6 @@
 				(hide yes)
 			)
 		)
-		(property "Price" "None"
-			(at 224.79 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
 		(property "Check_prices" "https://www.snapeda.com/parts/FS8205/Fortune+Semiconductor/view-part/?ref=eda"
 			(at 224.79 156.21 0)
 			(effects
@@ -10455,16 +10463,6 @@
 				(hide yes)
 			)
 		)
-		(property "Description_1" "\n                        \n                            Dual N-Channel Enhancement Mode Power MOSFET\n                        \n"
-			(at 224.79 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
 		(property "Availability" "In Stock"
 			(at 224.79 156.21 0)
 			(effects
@@ -10475,13 +10473,12 @@
 				(hide yes)
 			)
 		)
-		(property "MANUFACTURER" "Fortune"
-			(at 224.79 156.21 0)
+		(property "LCSC" "C908265"
+			(at 224.79 156.21 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify bottom)
 				(hide yes)
 			)
 		)
@@ -10567,7 +10564,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C265055"
+		(property "LCSC" "C144394"
 			(at 96.52 161.29 0)
 			(effects
 				(font
