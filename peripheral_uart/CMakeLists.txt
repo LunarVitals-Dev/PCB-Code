@@ -17,9 +17,6 @@ target_sources(app PRIVATE
   src/BMP280.c
   src/MLX90614.c
   src/MPU6050.c
-  src/MAX30102.c
-  src/heart_rate.c
-  src/spo2_algorithm.c
   src/aggregator.c
 )
 

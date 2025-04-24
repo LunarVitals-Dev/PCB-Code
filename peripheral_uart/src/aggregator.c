@@ -5,7 +5,7 @@
 // Total number of sensor messages per JSON array
 #define TOTAL_SENSORS    4
 // Maximum size of the aggregation buffer
-#define AGG_BUFFER_SIZE 1500
+#define AGG_BUFFER_SIZE 1024
 
 // Buffer to build the JSON array, and counter for accumulated messages
 static char aggregated_sensor_data[AGG_BUFFER_SIZE];
@@ -64,6 +64,7 @@ void aggregator_finalize_and_send(void) {
 
     // Send the complete JSON array
     send_message_to_bluetooth(aggregated_sensor_data);
+    // printk("Sending: %s\n", aggregated_sensor_data);
 
     // Reset for the next cycle
     aggregator_init();

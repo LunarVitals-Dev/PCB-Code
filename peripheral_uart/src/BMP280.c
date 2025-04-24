@@ -48,9 +48,6 @@ void bmp280_init(const struct device *i2c_dev) {
     dig_P8 = (calib_data[21] << 8) | calib_data[20];
     dig_P9 = (calib_data[23] << 8) | calib_data[22];
 
-    // printk("Calibration Data: T1: %u, T2: %d, T3: %d, P1: %u, P2: %d, P3: %d, P4: %d, P5: %d, P6: %d, P7: %d, P8: %d, P9: %d\n",
-    //        dig_T1, dig_T2, dig_T3, dig_P1, dig_P2, dig_P3, dig_P4, dig_P5, dig_P6, dig_P7, dig_P8, dig_P9);
-
     // Configure sensor: normal mode, oversampling x1 for temp & pressure
     uint8_t ctrl_meas = (0x01 << 5) | (0x01 << 2) | 0x03;
     i2c_write_register(i2c_dev, BMP280_ADDR, BMP280_REG_CONTROL, ctrl_meas);
@@ -59,7 +56,7 @@ void bmp280_init(const struct device *i2c_dev) {
 
 void read_bmp280_data(const struct device *i2c_dev) {
     uint8_t data[6];
-    char message[400];
+    char message[64];
     int message_offset = 0;
 
     memset(message, 0, sizeof(message));
@@ -72,13 +69,11 @@ void read_bmp280_data(const struct device *i2c_dev) {
     int32_t adc_T = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4);
     int32_t adc_P = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);
 
-    //printk("ADC_T: %d, ADC_P: %d\n", adc_T, adc_P);
-
     // Temperature compensation
     int32_t var1 = ((((adc_T >> 3) - ((int32_t)dig_T1 << 1))) * ((int32_t)dig_T2)) >> 11;
     int32_t var2 = (((((adc_T >> 4) - ((int32_t)dig_T1)) * ((adc_T >> 4) - ((int32_t)dig_T1))) >> 12) * ((int32_t)dig_T3)) >> 14;
     t_fine = var1 + var2;
-    float celsius = ((t_fine * 5 + 128) >> 8) / 100.0f;
+    // float celsius = ((t_fine * 5 + 128) >> 8) / 100.0f;
     
     // Pressure compensation
     int64_t var1_p = ((int64_t)t_fine) - 128000;
@@ -96,19 +91,19 @@ void read_bmp280_data(const struct device *i2c_dev) {
     var2_p = (((int64_t)dig_P8) * p) >> 19;
     p = ((p + var1_p + var2_p) >> 8) + (((int64_t)dig_P7) << 4);
 
-    int pressure = p / 25600;  // Convert to hPa
+    float pressure = (float)p / 25600;  // Convert to hPa
 
     // Create JSON message
     message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
+    // message_offset += snprintf(
+    //     message + message_offset, sizeof(message) - message_offset,
+    //     "\"BMP_Temperature\": {\"Celsius\": %.2f},",
+    //     (double)celsius
+    // );
     message_offset += snprintf(
         message + message_offset, sizeof(message) - message_offset,
-        "\"BMP_Temperature\": {\"Celsius\": %.2f},",
-        celsius
-    );
-    message_offset += snprintf(
-        message + message_offset, sizeof(message) - message_offset,
-        "\"BMP_Pressure\": {\"hPa\": %d}",
-        pressure
+        "\"BMP_Pressure\": {\"hPa\": %.2f}",
+        (double)pressure
     );
 
     // Close the JSON object.
@@ -116,6 +111,4 @@ void read_bmp280_data(const struct device *i2c_dev) {
   
     // Instead of sending immediately, add this sensor's message to the aggregator.
     aggregator_add_data(message);
-
-    // printf("%s\n", message);
 }

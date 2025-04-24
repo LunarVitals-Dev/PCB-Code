@@ -1,20 +1,18 @@
-/*
- * Copyright (c) 2018 Nordic Semiconductor ASA
- *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
- */
-
 /** @file
  *  @brief Nordic UART Bridge Service (NUS) sample
  */
 #include "adc.h"
 #include "aggregator.h"
+#include <math.h>  // Include for exponential calculations if needed
 
 #define ADC_REF_VOLTAGE_MV 600 // Internal reference in mV
 #define ADC_GAIN (1.0 / 6.0)    // Gain of 1/6
 #define ADC_RESOLUTION 4096     // 12-bit resolution
 #define NUMOFADCCHANNELS 2
-/* ADC channel configuration via Device Tree */
+#define BEAT_THRESHOLD 80   // Minimum change to detect a beat
+#define MAX_PEAKS 20            // Circular buffer for peak timestamps
+#define MIN_PEAK_INTERVAL_MS 600 // Minimum interval between peaks for valid BPM calculation 
+#define MOVING_AVERAGE_WINDOW 5
 
 extern void send_message_to_bluetooth(const char *message);
 
@@ -23,14 +21,11 @@ static int16_t buf;
 static struct adc_sequence sequence = {
     .buffer = &buf,
     .buffer_size = sizeof(buf), 
-    /* Optional calibration */
-    //.calibrate = true,
 };
 
 
 // -----------------Filtering Pulse ------------------
-#include <math.h>  // Include for exponential calculations if needed
-    // Filter Variables
+// Filter Variables
 int32_t prev_sample = 0; // Derivative filter variable
 
 // Heart Rate Variables
@@ -46,9 +41,6 @@ int32_t derivative_filter(int32_t new_sample, int32_t prev_sample) {
 // -----------------Filtering  Pulse------------------
 
 // -------- Filtering Respiratory---------------------------------------------
-
-#include <math.h>  // Include for exponential calculations if needed
-#define MOVING_AVERAGE_WINDOW 5
 
 // Filter Variables
 int32_t prev_val_moving_avg_breath = 0;
@@ -86,7 +78,6 @@ bool detect_peak_breath(int32_t current_value, int32_t prev_value, bool *rising)
         return true; // Peak detected
     } else if (!*rising && current_value > prev_value + BREATHING_THRESHOLD) {
         *rising = true;
-        // printf("Rising True\n"); // for debugging
     }
     return false;
 }
@@ -135,10 +126,6 @@ float calculate_breathing_rate_new(void) {
 // ------- Breathing Rate Calculation ------------------------------
 
 // ------- Heart Rate Calculation ------------------------------
-#define BEAT_THRESHOLD 80   // Minimum change to detect a beat
-#define MAX_PEAKS 20            // Circular buffer for peak timestamps
-#define MIN_PEAK_INTERVAL_MS 600 // Minimum interval between peaks for valid BPM calculation 
-
 // Detect peaks
 bool detect_peak(int32_t current_value, int32_t prev_value, bool *rising) {
     if (*rising && current_value < prev_value) {
@@ -146,7 +133,6 @@ bool detect_peak(int32_t current_value, int32_t prev_value, bool *rising) {
         return true; // Peak detected
     } else if (!*rising && current_value > prev_value + BEAT_THRESHOLD) {
         *rising = true;
-        // printf("Rising True\n"); // for debugging
     }
     return false;
 }
@@ -194,40 +180,37 @@ float calculate_BPM(void) {
 // ------- Heart Rate Calculation ------------------------------
 
 
-
 int32_t convert_to_mv(int16_t raw_value) {
     return (int32_t)((raw_value * ADC_REF_VOLTAGE_MV * (1.0 / ADC_GAIN)) / ADC_RESOLUTION);
 }
 
 void adc_init(){
-
-
 	for(int i = 0; i < NUMOFADCCHANNELS; i++){
 		int err = 0;
 		const struct adc_dt_spec *adc_channel = &adc_channels[i];
 		if (!adc_is_ready_dt(adc_channel)) {
-			printf("ADC controller device %s not ready\n", adc_channel->dev->name);
+			printk("ADC controller device %s not ready\n", adc_channel->dev->name);
 			return;
 		}
 
 		/* Configure ADC channel */
 		int err1 = adc_channel_setup_dt(adc_channel);
 		if (err1 < 0) {
-			printf("Could not setup ADC channel (%d)\n", err);
+			printk("Could not setup ADC channel (%d)\n", err);
 			return;
 		}
 
 		/* Initialize ADC sequence */
 		err1 = adc_sequence_init_dt(adc_channel, &sequence);
 		if (err1 < 0) {
-			printf("Could not initialize ADC sequence (%d)\n", err);
+			printk("Could not initialize ADC sequence (%d)\n", err);
 			return;
 		}
 	}
 }
 
 void get_adc_data() {
-    char message[400];
+    char message[256];
     int message_offset = 0;  
 
     memset(message, 0, sizeof(message));
@@ -243,7 +226,7 @@ void get_adc_data() {
         // Read ADC data for the current channel
         int err1 = adc_read(adc_channel->dev, &sequence);
         if (err1 < 0) {
-            printf("ADC read failed for channel %d (%d)\n", i, err1);
+            printk("ADC read failed for channel %d (%d)\n", i, err1);
         } else {
             // Convert the raw value to millivolts
             int32_t val_mv = convert_to_mv(buf);
@@ -254,7 +237,6 @@ void get_adc_data() {
                  // Apply Moving Average Filter
                 int32_t moving_avg_breath = moving_average_filter_breath(&prev_val_moving_avg_breath, val_mv);
                 int32_t BRPM = prev_BRPM;
-                //printf(">m:%d\n", moving_avg); // Moving average value
 
                 // Breathing rate calculation
                 if (detect_peak_breath(moving_avg_breath, prev_val_moving_avg_breath, &rising)) {
@@ -268,8 +250,7 @@ void get_adc_data() {
                         // Calcuulate and display the breathing rate
                         float breathing_rate = calculate_breathing_rate_new();
                         if (breathing_rate > 0) {
-                            BRPM = breathing_rate;
-                            //printf(">b:%.2f\n", breathing_rate); // breathing rate in breaths per minute  
+                            BRPM = breathing_rate; 
                         } 
                     }
                 }
@@ -304,7 +285,6 @@ void get_adc_data() {
                         if (bpm > 0) {
                             final_bpm = bpm;
                             previous_bpm = final_bpm;
-                          // bpm =  printf(">b:%.2f\n", bpm); // beats per minute  
                         } 
                     }
                 }
@@ -325,7 +305,4 @@ void get_adc_data() {
   
     // Instead of sending immediately, add this sensor's message to the aggregator.
     aggregator_add_data(message);
-
-    // Print final JSON message
-    // printf("%s\n", message);
 }

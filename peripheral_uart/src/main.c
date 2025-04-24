@@ -33,7 +33,7 @@
 
 
 // Global buffer to store the current message
-static char gatt_string_msg[1500] = "Hello, World!";
+static char gatt_string_msg[1024] = "Hello, World!";
 
 static const struct bt_data ad[] = {
 	BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
@@ -63,7 +63,7 @@ static ssize_t write_gatt_string(struct bt_conn *conn,
                                  uint16_t offset, 
                                  uint8_t flags)
 {
-    char value[1500]; // Adjust size as needed
+    char value[1024]; // Adjust size as needed
     memcpy(value, buf, len);
     value[len] = '\0'; // Ensure null termination
     printk("Received string: %s\n", value);
@@ -135,29 +135,6 @@ static struct bt_conn_auth_cb auth_cb_display = {
 	.cancel = auth_cancel,
 };
 
-// static void bas_notify(void)
-// {
-// 	uint8_t battery_level = bt_bas_get_battery_level();
-
-// 	battery_level--;
-
-// 	if (!battery_level) {
-// 		battery_level = 100U;
-// 	}
-
-// 	bt_bas_set_battery_level(battery_level);
-// }
-
-
-// static void send_gatt_string(void)
-// {
-//     const char *msg = "Hello, World This is Lunar Vitals!";
-//     bt_gatt_notify(NULL, &gatt_service.attrs[1], msg, strlen(msg));
-//     printk("Sent: %s\n", msg);
-// }
-
-
-
 //------------bluetooth---------------
 
 #define LOG_MODULE_NAME peripheral_uart
@@ -167,22 +144,13 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 #define RUN_STATUS_LED DK_LED1
 #define RUN_LED_BLINK_INTERVAL 1000
 
-#define CON_STATUS_LED DK_LED2
-
 
 
 //------------bluetooth---------------
 //-------------LEDS--------------
 #define LED1_NODE DT_ALIAS(led_custom_1)
-#define LED2_NODE DT_ALIAS(led_custom_2)
 static const struct device *gpio_dev;
-#define BLUE_LED_PIN 24
 #define RED_LED_PIN 2
-
-
-void bluetooth_pairing_led(int status){
-	gpio_pin_set(gpio_dev, BLUE_LED_PIN, status);
-}
 
 void error_led(int status){
 	gpio_pin_set(gpio_dev, RED_LED_PIN, status);
@@ -205,9 +173,8 @@ void button_changed(uint32_t button_state, uint32_t has_changed)
         return;
     }
 
-
-    printf("Button changed: state=0x%08X, changed=0x%08X, pressed=0x%08X\n",
-           button_state, has_changed, buttons);
+    // printf("Button changed: state=0x%08X, changed=0x%08X, pressed=0x%08X\n",
+    //        button_state, has_changed, buttons);
 
 	if(buttons == 1){
 		
@@ -249,7 +216,7 @@ void send_message_to_bluetooth(const char *msg)
 	// Notify the client (if notifications are supported and enabled)
 	bt_gatt_notify(NULL, &gatt_service.attrs[1], gatt_string_msg, strlen(gatt_string_msg));
 
-	printk("Sent: %s\n", gatt_string_msg);
+	// printk("Sent: %s\n", gatt_string_msg);
 }
 
 void configure_leds(void)
@@ -261,10 +228,8 @@ void configure_leds(void)
         return;
     }
 
-    gpio_pin_configure(gpio_dev, BLUE_LED_PIN, GPIO_OUTPUT);
     gpio_pin_configure(gpio_dev, RED_LED_PIN, GPIO_OUTPUT);
 
-    bluetooth_pairing_led(0);
     error_led(0);
 }
 
@@ -276,8 +241,6 @@ int main(void)
     int err = 0;
 
     configure_gpio();
-	
-    printk("Starting Lunar Vitals Program\n");
     configure_leds();
 		
 	//------------bluetooth---------------
@@ -289,27 +252,24 @@ int main(void)
 
     bt_ready();
     bt_conn_auth_cb_register(&auth_cb_display);
-	printk("UUID (16-bit): 0x%04X\n", BT_UUID_GATT_STRING_VAL);
+	// printk("UUID (16-bit): 0x%04X\n", BT_UUID_GATT_STRING_VAL);
 	//------------bluetooth---------------
 	int64_t last_send = k_uptime_get();
 	aggregator_init();
 	//----------------------
-	    /* Verify ADC readiness */
+	/* Verify ADC readiness */
     adc_init();
 	i2c_init();
-	// max30102_default_setup(&dev_max30102);
 	//-------------------------
     // Main loop to blink LED to indicate status
     while(1) {
-		//printk(".\n");
 		//send_gatt_string();
+	
 		dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
+
 		if(collect_data){
 			i2c_read_data();
 			get_adc_data();
-			// for (int i = 0; i < 10; i++) {
-			// 	max30102_read_data_hr(&dev_max30102);
-			// }
 		}
 
 		int64_t now = k_uptime_get();
@@ -320,5 +280,4 @@ int main(void)
 		
         k_sleep(K_MSEC(100));
     }
-
 }
