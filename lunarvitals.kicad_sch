@@ -5805,6 +5805,16 @@
 		)
 		(uuid "8fa33729-f8bf-4882-b1cf-0808461564aa")
 	)
+	(label "I2C0_SCL"
+		(at 140.97 181.61 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "a144bfde-b05c-4bf2-8b37-50e3a071e990")
+	)
 	(label "I2C1_SCL"
 		(at 157.48 66.04 0)
 		(effects
@@ -5844,6 +5854,16 @@
 			(justify left bottom)
 		)
 		(uuid "ea6bc73c-43bb-4232-bac4-58f4a8409974")
+	)
+	(label "I2C0_SDA"
+		(at 140.97 179.07 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ea6eeb1e-8bbf-4ac7-9e52-e853ed7d6985")
 	)
 	(label "I2C0_SCL"
 		(at 22.86 157.48 180)
@@ -7169,6 +7189,73 @@
 			(project ""
 				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
 					(reference "U1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 140.97 184.15 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "352fb739-ed19-4b83-9a90-147b2120e52c")
+		(property "Reference" "#PWR020"
+			(at 134.62 184.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 137.16 184.1499 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 140.97 184.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 140.97 184.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 140.97 184.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3eccb60b-2c10-46c8-8d70-c7003ed773b7")
+		)
+		(instances
+			(project "lunarvitals"
+				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
+					(reference "#PWR020")
 					(unit 1)
 				)
 			)
@@ -8812,6 +8899,91 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x04")
+		(at 146.05 179.07 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8964be8b-c957-450b-b12f-d15de8fbad26")
+		(property "Reference" "J4"
+			(at 148.59 179.0699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MAX30102"
+			(at 148.59 181.6099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical"
+			(at 146.05 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 146.05 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "JST XA Header Through-hole type"
+			(at 146.05 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C144395"
+			(at 146.05 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "d137607e-3894-44b0-b9bf-f1463ddb76bc")
+		)
+		(pin "1"
+			(uuid "c9acb500-d27e-437d-bbdd-14013f5d8b39")
+		)
+		(pin "4"
+			(uuid "b6628b6a-0528-4fff-80af-4b5af4f82aa7")
+		)
+		(pin "3"
+			(uuid "e7a7ea9f-7c03-49ad-9451-3790e05d5e6a")
+		)
+		(instances
+			(project "lunarvitals"
+				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
+					(reference "J4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 30.48 101.6 0)
 		(unit 1)
@@ -8872,6 +9044,73 @@
 			(project "lunarvitals"
 				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
 					(reference "#PWR021")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 140.97 176.53 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8d671c73-b3f5-47c1-8752-c43a3f42d57b")
+		(property "Reference" "#PWR012"
+			(at 144.78 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 137.16 176.5299 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 140.97 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 140.97 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 140.97 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a045a57f-b9cd-4b19-9905-0b30057ede24")
+		)
+		(instances
+			(project "lunarvitals"
+				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
+					(reference "#PWR012")
 					(unit 1)
 				)
 			)
