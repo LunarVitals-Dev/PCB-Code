@@ -1,15 +1,3 @@
-/*
-    * MAX30102.h
-    *
-    *  Created on: 2020. 12. 10.
-    * 
-    * This file was created to interface with the MAX30102 pulse oximeter sensor
-    * It uses algorithms developed by Nathan Seidle of Sparkfun Electronics as 
-    * adapted in i2c_de.
-    * 
-    * TODO: need to clean this up and add more functionality
-*/
-
 #ifndef MAX30102_H_
 #define MAX30102_H_
 
@@ -22,6 +10,8 @@
 
 #define MAX30102_NODE DT_NODELABEL(max30102)
 #define MAX30102_DT_SPEC I2C_DT_SPEC_GET(MAX30102_NODE)
+
+#define BUFFERLENGTH 100
 
 #define DATA_BUFFER_SIZE 32
 typedef struct buffer {
@@ -41,7 +31,7 @@ void max30102_default_setup(const struct i2c_dt_spec *dev_max30102);
 void max30102_pulse_oximeter_setup(const struct i2c_dt_spec *dev_max30102, uint8_t sample_avg, bool fifo_rollover, uint8_t fifo_int_threshold, MAX30102_mode_t mode, int sample_rate, int pulse_width, int adc_range);
 int max30102_check(const struct i2c_dt_spec *dev_max30102);
 
-void max30102_read_data_hr(const struct i2c_dt_spec *dev_max30102);
+void max30102_read_data_spo2(const struct i2c_dt_spec *dev_max30102);
 int max30102_available(void);
 void max30102_next_sample(void);
 

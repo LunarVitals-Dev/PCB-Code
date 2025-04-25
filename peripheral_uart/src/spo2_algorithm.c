@@ -105,6 +105,9 @@ void maxim_heart_rate_and_oxygen_saturation(uint32_t *pun_ir_buffer, int32_t n_i
   int32_t an_ratio[5], n_ratio_average; 
   int32_t n_nume, n_denom ;
 
+  static  int32_t an_x[ BUFFER_SIZE]; //ir
+  static  int32_t an_y[ BUFFER_SIZE]; //red
+
   // calculates DC mean and subtract DC from ir
   un_ir_mean =0; 
   for (k=0 ; k<n_ir_buffer_length ; k++ ) un_ir_mean += pun_ir_buffer[k] ;
@@ -138,7 +141,7 @@ void maxim_heart_rate_and_oxygen_saturation(uint32_t *pun_ir_buffer, int32_t n_i
     *pch_hr_valid  = 1;
   }
   else  { 
-    *pn_heart_rate = -999; // unable to calculate because # of peaks are too small
+    *pn_heart_rate = 100;
     *pch_hr_valid  = 0;
   }
 
@@ -159,7 +162,7 @@ void maxim_heart_rate_and_oxygen_saturation(uint32_t *pun_ir_buffer, int32_t n_i
   for(k=0; k< 5; k++) an_ratio[k]=0;
   for (k=0; k< n_exact_ir_valley_locs_count; k++){
     if (an_ir_valley_locs[k] > BUFFER_SIZE ){
-      *pn_spo2 =  -999 ; // do not use SPO2 since valley loc is out of range
+      *pn_spo2 =  100;
       *pch_spo2_valid  = 0; 
       return;
     }
@@ -204,7 +207,7 @@ void maxim_heart_rate_and_oxygen_saturation(uint32_t *pun_ir_buffer, int32_t n_i
     *pch_spo2_valid  = 1;//  float_SPO2 =  -45.060*n_ratio_average* n_ratio_average/10000 + 30.354 *n_ratio_average/100 + 94.845 ;  // for comparison with table
   }
   else{
-    *pn_spo2 =  -999 ; // do not use SPO2 since signal an_ratio is out of range
+    *pn_spo2 = 100;
     *pch_spo2_valid  = 0; 
   }
 }

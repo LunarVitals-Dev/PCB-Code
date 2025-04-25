@@ -31,6 +31,7 @@
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/services/bas.h>
 
+static const struct i2c_dt_spec dev_max30102 = MAX30102_DT_SPEC;
 
 // Global buffer to store the current message
 static char gatt_string_msg[1024] = "Hello, World!";
@@ -216,7 +217,7 @@ void send_message_to_bluetooth(const char *msg)
 	// Notify the client (if notifications are supported and enabled)
 	bt_gatt_notify(NULL, &gatt_service.attrs[1], gatt_string_msg, strlen(gatt_string_msg));
 
-	// printk("Sent: %s\n", gatt_string_msg);
+	// printk("%s\n", gatt_string_msg);
 }
 
 void configure_leds(void)
@@ -260,6 +261,7 @@ int main(void)
 	/* Verify ADC readiness */
     adc_init();
 	i2c_init();
+	max30102_default_setup(&dev_max30102);
 	//-------------------------
     // Main loop to blink LED to indicate status
     while(1) {
@@ -270,6 +272,7 @@ int main(void)
 		if(collect_data){
 			i2c_read_data();
 			get_adc_data();
+			max30102_read_data_spo2(&dev_max30102);
 		}
 
 		int64_t now = k_uptime_get();

@@ -76,8 +76,6 @@
 
 //uch_spo2_table is approximated as  -45.060*ratioAverage* ratioAverage + 30.354 *ratioAverage + 94.845 ;
 extern const uint8_t uch_spo2_table[184];
-static  int32_t an_x[ BUFFER_SIZE]; //ir
-static  int32_t an_y[ BUFFER_SIZE]; //red
 
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)

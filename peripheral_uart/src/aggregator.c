@@ -3,7 +3,7 @@
 #include <string.h>
 
 // Total number of sensor messages per JSON array
-#define TOTAL_SENSORS    4
+#define TOTAL_SENSORS   5
 // Maximum size of the aggregation buffer
 #define AGG_BUFFER_SIZE 1024
 
