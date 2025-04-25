@@ -280,7 +280,7 @@ void max30102_read_data_spo2(const struct i2c_dt_spec * dev_max30102)
 
 	offset += snprintf(message + offset,
 		sizeof(message) - offset,
-		"\"MAX_SPO2 Sensor\": {\"SPO2\": %d}",	
+		"\"SPO2_Sensor\": {\"SPO2\": %d}",	
 		spo2);
 
     /* Close JSON and enqueue */

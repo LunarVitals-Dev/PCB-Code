@@ -193,7 +193,7 @@ void read_mpu6050_data(const struct device *i2c_dev)
     );
 
     offset += snprintf(message + offset, sizeof(message) - offset,
-                    "\"MPU_Accelerometer\": {"
+                    "\"Accel\": {"
                     "\"X_g\": %.2f, \"Y_g\": %.2f, \"Z_g\": %.2f, \"step_rate\": %u},",
                     (double)step_counter.accel_x,
                     (double)step_counter.accel_y,
@@ -221,8 +221,8 @@ void read_mpu6050_data(const struct device *i2c_dev)
     );
 
     offset += snprintf(message + offset, sizeof(message) - offset,
-                    "\"MPU_Gyroscope\": {"
-                    "\"X_deg_per_s\": %.2f, \"Y_deg_per_s\": %.2f, \"Z_deg_per_s\": %.2f, \"rotation_rate\": %u}"
+                    "\"Gyro\": {"
+                    "\"X_deg\": %.2f, \"Y_deg\": %.2f, \"Z_deg\": %.2f, \"rotation_rate\": %u}"
                     ,
                     (double)step_counter.gyro_x,
                     (double)step_counter.gyro_y,

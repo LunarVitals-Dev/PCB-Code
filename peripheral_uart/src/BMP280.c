@@ -102,7 +102,7 @@ void read_bmp280_data(const struct device *i2c_dev) {
     // );
     message_offset += snprintf(
         message + message_offset, sizeof(message) - message_offset,
-        "\"BMP_Pressure\": {\"hPa\": %.2f}",
+        "\"Pressure\": {\"hPa\": %.2f}",
         (double)pressure
     );
 
