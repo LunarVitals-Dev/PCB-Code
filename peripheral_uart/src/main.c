@@ -217,7 +217,7 @@ void send_message_to_bluetooth(const char *msg)
 	// Notify the client (if notifications are supported and enabled)
 	bt_gatt_notify(NULL, &gatt_service.attrs[1], gatt_string_msg, strlen(gatt_string_msg));
 
-	// printk("%s\n", gatt_string_msg);
+	printk("%s\n", gatt_string_msg);
 }
 
 void configure_leds(void)
@@ -276,7 +276,7 @@ int main(void)
 		}
 
 		int64_t now = k_uptime_get();
-        if (now - last_send >= 1000) {
+        if (now - last_send >= 2000) {
             aggregator_finalize_and_send();
             last_send = now;
         }

@@ -3,6 +3,7 @@
         "${workspaceFolder}"
     ],
     "files.associations": {
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "hci.h": "c"
     }
 }
