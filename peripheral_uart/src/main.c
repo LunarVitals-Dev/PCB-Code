@@ -259,9 +259,9 @@ int main(void)
 	aggregator_init();
 	//----------------------
 	/* Verify ADC readiness */
-    adc_init();
+    // adc_init();
 	i2c_init();
-	max30102_default_setup(&dev_max30102);
+	// max30102_default_setup(&dev_max30102);
 	//-------------------------
     // Main loop to blink LED to indicate status
     while(1) {
@@ -271,12 +271,12 @@ int main(void)
 
 		if(collect_data){
 			i2c_read_data();
-			get_adc_data();
-			max30102_read_data_spo2(&dev_max30102);
+			// get_adc_data();
+			// max30102_read_data_spo2(&dev_max30102);
 		}
 
 		int64_t now = k_uptime_get();
-        if (now - last_send >= 2000) {
+        if (now - last_send >= 1000) {
             aggregator_finalize_and_send();
             last_send = now;
         }
