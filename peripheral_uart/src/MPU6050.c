@@ -10,17 +10,17 @@
 #include "i2c.h"
 #include "aggregator.h"
 
-
 /* ACCELEROMETER */
-#define MAX_STEP_HISTORY 50       /* Number of recent step timestamps to keep */
-#define STEP_WINDOW_MS   10000    /* Time window (ms) for rate calculation */
-#define STEP_DEBOUNCE_MS   500    /* Minimum interval (ms) between steps */
+#define MAX_STEP_HISTORY   50       /* Number of recent step timestamps to keep */
+#define STEP_WINDOW_MS     60000    /* Time window (ms) for rate calculation */
+#define STEP_DEBOUNCE_MS   500      /* Minimum interval (ms) between steps */
+#define STEP_THRESHOLD     0.2f     /* Minimum change in vector magnitude to count a step */  
 
 /* GYROSCOPE */
-#define MAX_GYRO_HISTORY   50        /* how many rotation events to remember */
-#define GYRO_WINDOW_MS     10000     /* same window as steps */
-#define GYRO_DEBOUNCE_MS   500       /* ignore bounces under 100 ms */
-#define GYRO_THRESHOLD     26.0f     /* deg/s change needed to count a “swing” */
+#define MAX_GYRO_HISTORY   50       /* how many rotation events to remember */
+#define GYRO_WINDOW_MS     60000    /* same window as steps */
+#define GYRO_DEBOUNCE_MS   500      /* ignore bounces under 100 ms */
+#define GYRO_THRESHOLD     30.0f    /* deg/s change needed to count a “swing” */
 
 /* Step counter state */
 typedef struct {
@@ -28,15 +28,18 @@ typedef struct {
     float    vector_previous;                  /* Previous acceleration magnitude */
     float    accel_x, accel_y, accel_z;        /* Latest accel readings (g) */
     float    gyro_x, gyro_y, gyro_z;           /* Latest gyro readings (°/s) */
-    uint32_t    rate;                             /* Steps per STEP_WINDOW_MS */
     uint32_t step_timestamps[MAX_STEP_HISTORY];/* Circular buffer of step times */
     int      step_history_index;               /* Next write index in buffer */
+    uint32_t step_count;                       /* Total step count for last window (unused) */
+    uint32_t rate;                             /* Steps per minute */
+    uint32_t window_start_time;                /* Unused */
+    uint32_t last_activity_time;               /* Unused */
 
-    float    prev_gyro_mag;                  /* last gyro‐vector magnitude */
-    uint32_t last_gyro_time;                 /* last time we counted a rotation */
+    float    prev_gyro_mag;                    /* last gyro‐vector magnitude */
+    uint32_t last_gyro_time;                   /* last time we counted a rotation */
     uint32_t gyro_timestamps[MAX_GYRO_HISTORY];
     int      gyro_history_index;
-    uint32_t rotation_rate;                  /* “swings” in past window */
+    uint32_t rotation_rate;                    /* Rotations per minute */
 } StepCounter;
 
 static StepCounter step_counter;
@@ -44,40 +47,46 @@ static StepCounter step_counter;
 static void init_step_counter(void)
 {
     memset(&step_counter, 0, sizeof(step_counter));
+    step_counter.window_start_time = k_uptime_get_32();
+    step_counter.last_activity_time = step_counter.window_start_time;
 }
 
 /**
- * @brief Calculate step rate over the last STEP_WINDOW_MS.
+ * @brief Calculate step rate over the last STEP_WINDOW_MS sliding window.
  *
- * @return Number of steps detected in that window.
+ * @return Number of steps per minute.
  */
 float calculate_step_rate(void)
 {
     uint32_t now = k_uptime_get_32();
     int count = 0;
-
     for (int i = 0; i < MAX_STEP_HISTORY; i++) {
         uint32_t ts = step_counter.step_timestamps[i];
         if (ts != 0 && (now - ts) <= STEP_WINDOW_MS) {
             count++;
         }
     }
-
-    return count;
+    step_counter.rate = count;
+    return (float)step_counter.rate;
 }
 
-static float calculate_rotation_rate(void)
+/**
+ * @brief Calculate rotation rate over the last GYRO_WINDOW_MS sliding window.
+ *
+ * @return Rotations per minute.
+ */
+float calculate_rotation_rate(void)
 {
     uint32_t now = k_uptime_get_32();
     int count = 0;
-
     for (int i = 0; i < MAX_GYRO_HISTORY; i++) {
         uint32_t ts = step_counter.gyro_timestamps[i];
         if (ts != 0 && (now - ts) <= GYRO_WINDOW_MS) {
             count++;
         }
     }
-    return count;
+    step_counter.rotation_rate = count;
+    return (float)step_counter.rotation_rate;
 }
 
 /**
@@ -92,43 +101,36 @@ static void process_step_detection(float ax, float ay, float az)
     float delta  = fabsf(vector - step_counter.vector_previous);
 
     /* If change exceeds threshold and enough time has passed, count a step */
-    if (delta > 0.2f && (now - step_counter.last_step_time) > STEP_DEBOUNCE_MS) {
+    if (delta > STEP_THRESHOLD && (now - step_counter.last_step_time) > STEP_DEBOUNCE_MS) {
         step_counter.last_step_time = now;
 
         /* Store timestamp in circular buffer */
         step_counter.step_timestamps[step_counter.step_history_index] = now;
         step_counter.step_history_index =
             (step_counter.step_history_index + 1) % MAX_STEP_HISTORY;
-
-        /* Update rate and log */
-        step_counter.rate = calculate_step_rate();
-        // printk("Steps: %u, Rate: %.0f per %u ms\n",
-        //        step_counter.step_count, step_counter.rate, STEP_WINDOW_MS);
     }
-
     step_counter.vector_previous = vector;
 }
 
+/**
+ * @brief Detect a rotation from gyroscope data.
+ *
+ * Uses the change in gyroscope magnitude to detect rotation swings.
+ */
 static void process_rotation_detection(float gx, float gy, float gz)
 {
     uint32_t now = k_uptime_get_32();
     float mag   = sqrtf(gx*gx + gy*gy + gz*gz);
     float delta = fabsf(mag - step_counter.prev_gyro_mag);
 
-    if (delta > GYRO_THRESHOLD &&
-        (now - step_counter.last_gyro_time) > GYRO_DEBOUNCE_MS) {
+    if (delta > GYRO_THRESHOLD && (now - step_counter.last_gyro_time) > GYRO_DEBOUNCE_MS) {
+        step_counter.last_gyro_time = now;
 
-        step_counter.last_gyro_time =
-            step_counter.gyro_timestamps[
-                step_counter.gyro_history_index
-            ] = now;
-
+        /* Store timestamp in circular buffer */
+        step_counter.gyro_timestamps[step_counter.gyro_history_index] = now;
         step_counter.gyro_history_index =
             (step_counter.gyro_history_index + 1) % MAX_GYRO_HISTORY;
-
-        step_counter.rotation_rate = calculate_rotation_rate();
     }
-
     step_counter.prev_gyro_mag = mag;
 }
 
@@ -151,15 +153,14 @@ void mpu6050_init(const struct device *i2c_dev)
     /* Wake sensor */
     if (i2c_write_register(i2c_dev, MPU6050_ADDR, PWR_MGMT_1, 0x00) != 0) {
         printk("Failed to wake up MPU6050\n");
-    } else {
-        printk("MPU6050 initialized successfully\n");
     }
+
     /* initialize step_counter state */
     init_step_counter();
 }
 
 /**
- * @brief Read accelerometer and gyroscope data, detect steps, and aggregate JSON.
+ * @brief Read accelerometer and gyroscope data, detect events, compute rates, and aggregate JSON.
  */
 void read_mpu6050_data(const struct device *i2c_dev)
 {
@@ -167,12 +168,13 @@ void read_mpu6050_data(const struct device *i2c_dev)
     uint8_t buf[6];
     char message[256];
     int  offset = 0;
+    uint32_t now = k_uptime_get_32();
 
     /* Start JSON */
     memset(message, 0, sizeof(message));
     offset += snprintf(message + offset,
-                        sizeof(message) - offset,
-                        "{");
+                       sizeof(message) - offset,
+                       "{");
 
     /* Read accelerometer registers */
     if (i2c_read_registers(i2c_dev, MPU6050_ADDR, ACCEL_XOUT_H, buf, 6) != 0) {
@@ -191,14 +193,16 @@ void read_mpu6050_data(const struct device *i2c_dev)
         step_counter.accel_y,
         step_counter.accel_z
     );
+    float step_rate = calculate_step_rate();
 
-    offset += snprintf(message + offset, sizeof(message) - offset,
-                    "\"Accel\": {"
-                    "\"X_g\": %.2f, \"Y_g\": %.2f, \"Z_g\": %.2f, \"step_rate\": %u},",
-                    (double)step_counter.accel_x,
-                    (double)step_counter.accel_y,
-                    (double)step_counter.accel_z,
-                    step_counter.rate
+    offset += snprintf(message + offset,
+                       sizeof(message) - offset,
+                       "\"Accel\": {"
+                       "\"X_g\": %.2f, \"Y_g\": %.2f, \"Z_g\": %.2f, \"step_rate\": %.1f},",
+                       (double)step_counter.accel_x,
+                       (double)step_counter.accel_y,
+                       (double)step_counter.accel_z,
+                       (double)step_rate
     );
 
     /* Read gyroscope registers */
@@ -213,25 +217,25 @@ void read_mpu6050_data(const struct device *i2c_dev)
     step_counter.gyro_y = gyro_raw[1] / 131.0f;
     step_counter.gyro_z = gyro_raw[2] / 131.0f;
 
-    /* process a rotation “swing” */
     process_rotation_detection(
         step_counter.gyro_x,
         step_counter.gyro_y,
         step_counter.gyro_z
     );
+    float rotation_rate = calculate_rotation_rate();
 
-    offset += snprintf(message + offset, sizeof(message) - offset,
-                    "\"Gyro\": {"
-                    "\"X_deg\": %.2f, \"Y_deg\": %.2f, \"Z_deg\": %.2f, \"rotation_rate\": %u}"
-                    ,
-                    (double)step_counter.gyro_x,
-                    (double)step_counter.gyro_y,
-                    (double)step_counter.gyro_z,
-                    step_counter.rotation_rate
+    offset += snprintf(message + offset,
+                       sizeof(message) - offset,
+                       "\"Gyro\": {"
+                       "\"X_deg\": %.2f, \"Y_deg\": %.2f, \"Z_deg\": %.2f, \"rotation_rate\": %.1f}"
+                       ,
+                       (double)step_counter.gyro_x,
+                       (double)step_counter.gyro_y,
+                       (double)step_counter.gyro_z,
+                       (double)rotation_rate
     );
 
     /* Close JSON and send */
-    strncat(message, "}", sizeof(message) - strlen(message) - 1);
+    offset += snprintf(message + offset, sizeof(message) - offset, "}");
     aggregator_add_data(message);
 }
-

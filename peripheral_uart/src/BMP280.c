@@ -103,7 +103,7 @@ void read_bmp280_data(const struct device *i2c_dev) {
     message_offset += snprintf(
         message + message_offset, sizeof(message) - message_offset,
         "\"Pressure\": {\"hPa\": %.2f}",
-        (double)pressure
+        (double)(pressure - 2.0f) // Adjusted for calibration
     );
 
     // Close the JSON object.

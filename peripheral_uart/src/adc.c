@@ -67,9 +67,9 @@ int32_t moving_average_filter_breath(int32_t *buffer, int32_t new_sample) {
 
 
 // ------- Breathing Rate Calculation ------------------------------
-#define BREATHING_THRESHOLD 10   // Minimum change to detect a breath
+#define BREATHING_THRESHOLD 100   // Minimum change to detect a breath
 #define MAX_PEAKS_BREATH 10            // Circular buffer for peak timestamps
-#define MIN_PEAK_INTERVAL_MS_BREATH 1500 // ~40 breaths per minute
+#define MIN_PEAK_INTERVAL_MS_BREATH 2500 // ~40 breaths per minute
 
 // Detect peaks
 bool detect_peak_breath(int32_t current_value, int32_t prev_value, bool *rising) {
@@ -236,7 +236,7 @@ void get_adc_data() {
 
                  // Apply Moving Average Filter
                 int32_t moving_avg_breath = moving_average_filter_breath(&prev_val_moving_avg_breath, val_mv);
-                int32_t BRPM = prev_BRPM;
+                // int32_t BRPM = prev_BRPM;
 
                 // Breathing rate calculation
                 if (detect_peak_breath(moving_avg_breath, prev_val_moving_avg_breath, &rising)) {
@@ -248,21 +248,21 @@ void get_adc_data() {
                         add_peak_timestamp_breath(current_time_breath); // Add the peak timestamp
 
                         // Calcuulate and display the breathing rate
-                        float breathing_rate = calculate_breathing_rate_new();
-                        if (breathing_rate > 0) {
-                            BRPM = breathing_rate; 
-                        } 
+                        // float breathing_rate = calculate_breathing_rate_new();
+                        // if (breathing_rate > 0) {
+                        //     BRPM = breathing_rate; 
+                        // } 
                     }
                 }
                 prev_val_moving_avg_breath = moving_avg_breath;
 
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
-                    "\"RespiratoryRate\": {\"avg_mV\": %d, \"BRPM\": %d},",
-                    moving_avg_breath, BRPM
+                    "\"RespiratoryRate\": {\"avg_mV\": %d},",
+                    moving_avg_breath
                 );
 
-                prev_BRPM = BRPM;
+                // prev_BRPM = BRPM;
 
             } else if (i == 1) {// Pulse Sensor
 
