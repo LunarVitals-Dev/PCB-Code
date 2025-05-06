@@ -180,4 +180,3 @@ fp-info-cache
 ~*.lck
 \#auto_saved_files#
 # Kicad 3D model files 
-*.step

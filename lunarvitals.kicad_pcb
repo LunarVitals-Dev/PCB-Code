@@ -6215,7 +6215,7 @@
 	(footprint "lunar_vitals_custom:lunarvitals_logo_big"
 		(layer "F.Cu")
 		(uuid "939b4220-9ef0-4445-acc9-7ebbe7b1bb92")
-		(at 173.5 84.5)
+		(at 230.5 72.5)
 		(property "Reference" "G***"
 			(at 0 0 0)
 			(layer "F.SilkS")
