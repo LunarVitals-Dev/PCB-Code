@@ -11,16 +11,16 @@
 #include "aggregator.h"
 
 /* ACCELEROMETER */
-#define MAX_STEP_HISTORY   50       /* Number of recent step timestamps to keep */
+#define MAX_STEP_HISTORY   200       /* Number of recent step timestamps to keep */
 #define STEP_WINDOW_MS     60000    /* Time window (ms) for rate calculation */
 #define STEP_DEBOUNCE_MS   500      /* Minimum interval (ms) between steps */
-#define STEP_THRESHOLD     0.2f     /* Minimum change in vector magnitude to count a step */  
+#define STEP_THRESHOLD     0.18f     /* Minimum change in vector magnitude to count a step */  
 
 /* GYROSCOPE */
-#define MAX_GYRO_HISTORY   50       /* how many rotation events to remember */
+#define MAX_GYRO_HISTORY   200     /* how many rotation events to remember */
 #define GYRO_WINDOW_MS     60000    /* same window as steps */
 #define GYRO_DEBOUNCE_MS   500      /* ignore bounces under 100 ms */
-#define GYRO_THRESHOLD     30.0f    /* deg/s change needed to count a “swing” */
+#define GYRO_THRESHOLD     32.0f    /* deg/s change needed to count a “swing” */
 
 /* Step counter state */
 typedef struct {

@@ -243,7 +243,7 @@ int main(void)
 
     configure_gpio();
     configure_leds();
-		
+	printk("version 1.0\n");
 	//------------bluetooth---------------
 	err = bt_enable(NULL);
     if (err) {

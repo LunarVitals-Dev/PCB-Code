@@ -10,9 +10,9 @@
 #define ADC_RESOLUTION 4096     // 12-bit resolution
 #define NUMOFADCCHANNELS 2
 #define BEAT_THRESHOLD 80   // Minimum change to detect a beat
-#define MAX_PEAKS 20            // Circular buffer for peak timestamps
+#define MAX_PEAKS 10            // Circular buffer for peak timestamps
 #define MIN_PEAK_INTERVAL_MS 600 // Minimum interval between peaks for valid BPM calculation 
-#define MOVING_AVERAGE_WINDOW 5
+#define MOVING_AVERAGE_WINDOW 10
 
 extern void send_message_to_bluetooth(const char *message);
 
@@ -25,19 +25,34 @@ static struct adc_sequence sequence = {
 
 
 // -----------------Filtering Pulse ------------------
-// Filter Variables
-int32_t prev_sample = 0; // Derivative filter variable
+// // Filter Variables
+// int32_t prev_sample = 0; // Derivative filter variable
 
-// Heart Rate Variables
-bool rising = false;
-uint32_t last_peak_time = 0; // Timestamp of the last valid peak
-int32_t previous_val = 0;
-int32_t previous_bpm= 0;
+// // Heart Rate Variables
+// bool rising = false;
+// uint32_t last_peak_time = 0; // Timestamp of the last valid peak
+// int32_t previous_val = 0;
+// int32_t previous_bpm= 0;
 
-// Derivative filter
-int32_t derivative_filter(int32_t new_sample, int32_t prev_sample) {
-    return new_sample - prev_sample;
+// // Derivative filter
+// int32_t derivative_filter(int32_t new_sample, int32_t prev_sample) {
+//     return new_sample - prev_sample;
+// }
+
+#define SAMPLE_INTERVAL_MS 100
+#define SAMPLE_RATE_HZ (1000 / SAMPLE_INTERVAL_MS)
+#define BUFFER_SIZE (SAMPLE_RATE_HZ * 10)  // 10 seconds buffer
+int32_t signal_buffer[BUFFER_SIZE];
+uint16_t buffer_index = 0;
+uint16_t beat_count = 0;
+
+bool peak_detected = false;
+int32_t threshold = 1600;  // Adjust based on your signal
+uint32_t calculate_bpm() {
+    // 10 seconds = beat_count * 6 to get BPM
+    return beat_count * 6;
 }
+
 // -----------------Filtering  Pulse------------------
 
 // -------- Filtering Respiratory---------------------------------------------
@@ -127,59 +142,60 @@ float calculate_breathing_rate_new(void) {
 
 // ------- Heart Rate Calculation ------------------------------
 // Detect peaks
-bool detect_peak(int32_t current_value, int32_t prev_value, bool *rising) {
-    if (*rising && current_value < prev_value) {
-        *rising = false;
-        return true; // Peak detected
-    } else if (!*rising && current_value > prev_value + BEAT_THRESHOLD) {
-        *rising = true;
-    }
-    return false;
-}
+// bool detect_peak(int32_t current_value, int32_t prev_value, bool *rising) {
+//     if (*rising && current_value < prev_value) {
+//         *rising = false;
+//         return true; // Peak detected
+//     } else if (!*rising && current_value > prev_value + BEAT_THRESHOLD) {
+//         *rising = true;
+//     }
+//     return false;
+// }
 
-// Circular buffer to store timestamps of peaks
-uint32_t peak_timestamps[MAX_PEAKS];
-int peak_index = 0;
+// // Circular buffer to store timestamps of peaks
+// uint32_t peak_timestamps[MAX_PEAKS];
+// int peak_index = 0;
 
-void add_peak_timestamp(uint32_t timestamp) {
-    peak_timestamps[peak_index] = timestamp;
-    peak_index = (peak_index + 1) % MAX_PEAKS;
-}
+// void add_peak_timestamp(uint32_t timestamp) {
+//     peak_timestamps[peak_index] = timestamp;
+//     peak_index = (peak_index + 1) % MAX_PEAKS;
+// }
 
-float calculate_BPM(void) {
-    int valid_peaks = 0; // Number of valid peaks
-    if (peak_index < MAX_PEAKS) {
-        valid_peaks = peak_index;
-    } else {
-        valid_peaks = MAX_PEAKS;
-    }
+// float calculate_BPM(void) {
+//     int valid_peaks = 0; // Number of valid peaks
+//     if (peak_index < MAX_PEAKS) {
+//         valid_peaks = peak_index;
+//     } else {
+//         valid_peaks = MAX_PEAKS;
+//     }
 
-    if (valid_peaks < 2) {
-        return 0.0; // Not enough peaks to calculate rate
-    }
+//     if (valid_peaks < 2) {
+//         return 0.0; // Not enough peaks to calculate rate
+//     }
 
-    // Calculate time intervals between consecutive peaks
-    int interval_count = valid_peaks - 1;
-    uint32_t intervals[interval_count];
-    for (int i = 0; i < interval_count; i++) {
-        int current = (peak_index - i - 1 + MAX_PEAKS) % MAX_PEAKS;
-        int previous = (current - 1 + MAX_PEAKS) % MAX_PEAKS;
-        intervals[i] = peak_timestamps[current] - peak_timestamps[previous];
-    }
+//     // Calculate time intervals between consecutive peaks
+//     int interval_count = valid_peaks - 1;
+//     uint32_t intervals[interval_count];
+//     for (int i = 0; i < interval_count; i++) {
+//         int current = (peak_index - i - 1 + MAX_PEAKS) % MAX_PEAKS;
+//         int previous = (current - 1 + MAX_PEAKS) % MAX_PEAKS;
+//         intervals[i] = peak_timestamps[current] - peak_timestamps[previous];
+//     }
 
-    // Compute the average interval
-    uint32_t sum_intervals = 0;
-    for (int i = 0; i < interval_count; i++) {
-        sum_intervals += intervals[i];
-    }
-    float avg_period = (float)sum_intervals / interval_count;
+//     // Compute the average interval
+//     uint32_t sum_intervals = 0;
+//     for (int i = 0; i < interval_count; i++) {
+//         sum_intervals += intervals[i];
+//     }
+//     float avg_period = (float)sum_intervals / interval_count;
 
-    // Convert average period to beats per minute
-    return 60000.0f / avg_period; // 60000 ms per minute
-}
+//     // Convert average period to beats per minute
+//     return 60000.0f / avg_period; // 60000 ms per minute
+// }
 // ------- Heart Rate Calculation ------------------------------
 
-
+static int32_t prev_val_heart = 0;
+int32_t bpm_exp = -1;
 int32_t convert_to_mv(int16_t raw_value) {
     return (int32_t)((raw_value * ADC_REF_VOLTAGE_MV * (1.0 / ADC_GAIN)) / ADC_RESOLUTION);
 }
@@ -208,6 +224,7 @@ void adc_init(){
 		}
 	}
 }
+
 
 void get_adc_data() {
     char message[256];
@@ -239,7 +256,7 @@ void get_adc_data() {
                 // int32_t BRPM = prev_BRPM;
 
                 // Breathing rate calculation
-                if (detect_peak_breath(moving_avg_breath, prev_val_moving_avg_breath, &rising)) {
+                if (detect_peak_breath(moving_avg_breath, prev_val_moving_avg_breath, &rising_breath)) {
                     uint32_t current_time_breath = k_uptime_get(); // Get current uptime in milliseconds
 
                     // Check if enough time has passed since the last peak
@@ -266,35 +283,58 @@ void get_adc_data() {
 
             } else if (i == 1) {// Pulse Sensor
 
-                int32_t final_bpm = previous_bpm;
-                    // Filtering code
-                int32_t edge_enhanced = derivative_filter(val_mv, prev_sample);
-                prev_sample = val_mv;
-
-                                // BPM calculation
-                if (detect_peak(edge_enhanced, previous_val, &rising)) {
-                    uint32_t current_time = k_uptime_get(); // Get current uptime in milliseconds
-
-                    // Check if enough time has passed since the last peak
-                    if (current_time - last_peak_time >= MIN_PEAK_INTERVAL_MS) {
-                        last_peak_time = current_time; // Update the last peak time
-                        add_peak_timestamp(current_time); // Add the peak timestamp
-
-                        // Calculate and display the BPM
-                        float bpm = calculate_BPM();
-                        if (bpm > 0) {
-                            final_bpm = bpm;
-                            previous_bpm = final_bpm;
-                        } 
-                    }
+                 // Basic peak detection: above threshold and rising edge
+                
+                
+                if (val_mv > threshold && prev_val_heart <= threshold && !peak_detected) {
+                    beat_count++;
+                    peak_detected = true;
+                } else if (val_mv < threshold) {
+                    peak_detected = false;
                 }
-                previous_val = edge_enhanced;
+
+                prev_val_heart = val_mv;
+
+                buffer_index++;
+                if (buffer_index >= BUFFER_SIZE) {
+                    buffer_index = 0;
+                    // Calculate BPM every 10 seconds
+                    uint32_t bpm = calculate_bpm();
+                    beat_count = 0;  // Reset after calculation
+                    bpm_exp = bpm;
+                    
+                    // Do something with bpm (e.g., print or send over UART)
+                    printf("BPM: %d\n", bpm/2);
+                }
+                // int32_t final_bpm = previous_bpm;
+                //     // Filtering code
+                // int32_t edge_enhanced = derivative_filter(val_mv, prev_sample);
+                // prev_sample = val_mv;
+
+                //                 // BPM calculation
+                // if (detect_peak(edge_enhanced, previous_val, &rising)) {
+                //     uint32_t current_time = k_uptime_get(); // Get current uptime in milliseconds
+
+                //     // Check if enough time has passed since the last peak
+                //     if (current_time - last_peak_time >= MIN_PEAK_INTERVAL_MS) {
+                //         last_peak_time = current_time; // Update the last peak time
+                //         add_peak_timestamp(current_time); // Add the peak timestamp
+
+                //         // Calculate and display the BPM
+                //         float bpm = calculate_BPM();
+                //         if (bpm > 0) {
+                //             final_bpm = bpm;
+                //             previous_bpm = final_bpm;
+                //         } 
+                //     }
+                // }
+                // previous_val = edge_enhanced;
 
                 // Append to JSON message
                 message_offset += snprintf(
                     message + message_offset, sizeof(message) - message_offset,
                     "\"PulseSensor\": {\"Value_mV\": %d, \"pulse_BPM\": %d}",
-                    val_mv, final_bpm
+                    val_mv, bpm_exp/2
                 );
             }
         }
