@@ -304,7 +304,7 @@ void get_adc_data() {
                     bpm_exp = bpm;
                     
                     // Do something with bpm (e.g., print or send over UART)
-                    printf("BPM: %d\n", bpm/2);
+                    // printf("BPM: %d\n", bpm/2);
                 }
                 // int32_t final_bpm = previous_bpm;
                 //     // Filtering code

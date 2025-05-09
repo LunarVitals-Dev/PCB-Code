@@ -11,16 +11,16 @@
 #include "aggregator.h"
 
 /* ACCELEROMETER */
-#define MAX_STEP_HISTORY   200       /* Number of recent step timestamps to keep */
-#define STEP_WINDOW_MS     60000    /* Time window (ms) for rate calculation */
+#define MAX_STEP_HISTORY   300       /* Number of recent step timestamps to keep */
+#define STEP_WINDOW_MS     30000    /* Time window (ms) for rate calculation */
 #define STEP_DEBOUNCE_MS   500      /* Minimum interval (ms) between steps */
-#define STEP_THRESHOLD     0.18f     /* Minimum change in vector magnitude to count a step */  
+#define STEP_THRESHOLD     0.10f     /* Minimum change in vector magnitude to count a step */  
 
 /* GYROSCOPE */
-#define MAX_GYRO_HISTORY   200     /* how many rotation events to remember */
-#define GYRO_WINDOW_MS     60000    /* same window as steps */
-#define GYRO_DEBOUNCE_MS   500      /* ignore bounces under 100 ms */
-#define GYRO_THRESHOLD     32.0f    /* deg/s change needed to count a “swing” */
+#define MAX_GYRO_HISTORY   300     /* how many rotation events to remember */
+#define GYRO_WINDOW_MS     30000    /* same window as steps */
+#define GYRO_DEBOUNCE_MS   500     /* Minimum interval (ms) between rotations */
+#define GYRO_THRESHOLD     22.0f    /* deg/s change needed to count a “swing” */
 
 /* Step counter state */
 typedef struct {
@@ -66,7 +66,7 @@ float calculate_step_rate(void)
             count++;
         }
     }
-    step_counter.rate = count;
+    step_counter.rate = count * 2.0f;
     return (float)step_counter.rate;
 }
 
@@ -85,7 +85,7 @@ float calculate_rotation_rate(void)
             count++;
         }
     }
-    step_counter.rotation_rate = count;
+    step_counter.rotation_rate = count * 2.0f;
     return (float)step_counter.rotation_rate;
 }
 
@@ -168,7 +168,6 @@ void read_mpu6050_data(const struct device *i2c_dev)
     uint8_t buf[6];
     char message[256];
     int  offset = 0;
-    uint32_t now = k_uptime_get_32();
 
     /* Start JSON */
     memset(message, 0, sizeof(message));
@@ -198,7 +197,7 @@ void read_mpu6050_data(const struct device *i2c_dev)
     offset += snprintf(message + offset,
                        sizeof(message) - offset,
                        "\"Accel\": {"
-                       "\"X_g\": %.2f, \"Y_g\": %.2f, \"Z_g\": %.2f, \"step_rate\": %.1f},",
+                       "\"X_g\": %.2f, \"Y_g\": %.2f, \"Z_g\": %.2f, \"step_rate\": %.0f},",
                        (double)step_counter.accel_x,
                        (double)step_counter.accel_y,
                        (double)step_counter.accel_z,
@@ -227,7 +226,7 @@ void read_mpu6050_data(const struct device *i2c_dev)
     offset += snprintf(message + offset,
                        sizeof(message) - offset,
                        "\"Gyro\": {"
-                       "\"X_deg\": %.2f, \"Y_deg\": %.2f, \"Z_deg\": %.2f, \"rotation_rate\": %.1f}"
+                       "\"X_deg\": %.2f, \"Y_deg\": %.2f, \"Z_deg\": %.2f, \"rotation_rate\": %.0f}"
                        ,
                        (double)step_counter.gyro_x,
                        (double)step_counter.gyro_y,
