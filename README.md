@@ -16,8 +16,8 @@ This project utilizes the Nordic nRF52840 and various sensors for data collectio
 2. **MPU6050 (Accelerometer & Gyroscope)**  
    - [Datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf)  
    - **Connections:**
-     - SDA -> P0.13
-     - SCL -> P0.15
+     - SDA -> P1.10
+     - SCL -> P1.15
      - VDD -> VDD
      - GND -> GND
 
@@ -54,8 +54,5 @@ This project utilizes the Nordic nRF52840 and various sensors for data collectio
      - VDD -> VDD
      - GND -> GND
 
-## Notes
-- Ensure pull-up resistors are used where necessary for I2C lines.
-- ADC: AIN5 - 0.29 (Pulse Sensor), AIN7 - 0.31 (Rubber Cord)
-- LEDs: R - 0.02, G - 0.22, B - 0.24
+7. ADC: AIN5 - 0.29 (Pulse Sensor), AIN7 - 0.31 (Rubber Cord)
 
