@@ -1,6 +1,7 @@
 #include "aggregator.h"
 #include <stdio.h>
 #include <string.h>
+#include <zephyr/kernel.h>
 
 // Total number of sensor messages per JSON array
 #define TOTAL_SENSORS  5
