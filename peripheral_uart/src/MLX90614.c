@@ -81,7 +81,7 @@ void read_mlx90614_data(const struct device *i2c_dev)
         ambient_c = ambient_raw * 0.02f - 273.15f;  // Convert to °C
         offset += snprintf(message + offset,
                            sizeof(message) - offset,
-                           "\"AmbientTemp\": {\"Celsius\": %.2f},",
+                           "\"AmbientTemp\": {\"Celsius\": %.1f},",
                            (double)ambient_c);
     } else {
         printk("Failed to read MLX90614 ambient temperature\n");
@@ -93,7 +93,7 @@ void read_mlx90614_data(const struct device *i2c_dev)
         object_c = object_raw * 0.02f - 273.15f;    // Convert to °C
         offset += snprintf(message + offset,
                            sizeof(message) - offset,
-                           "\"ObjectTemp\": {\"Celsius\": %.2f}",
+                           "\"ObjectTemp\": {\"Celsius\": %.1f}",
                            (double)object_c);
     } else {
         printk("Failed to read MLX90614 object temperature\n");

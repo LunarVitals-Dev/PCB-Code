@@ -34,9 +34,9 @@ uint64_t last_bpm_calc_time = 0;
 // -------- Filtering Respiratory---------------------------------------------
 
 // -------- Filtering Respiratory---------------------------------------------
-#define BREATHING_THRESHOLD            8    
-#define MAX_PEAKS_BREATH               10     
-#define MIN_PEAK_INTERVAL_MS_BREATH    1500   
+#define BREATHING_THRESHOLD            7   
+#define MAX_PEAKS_BREATH               20     
+#define MIN_PEAK_INTERVAL_MS_BREATH    1000   
 #define BREATH_WINDOW_MS               20000  
 #define MOVING_AVERAGE_WINDOW          5
 
@@ -137,10 +137,6 @@ void get_adc_data() {
         } else {
             // Convert the raw value to millivolts
             int32_t val_mv = convert_to_mv(buf);
-
-            if (val_mv > 3300) {
-                val_mv = 3300; 
-            }
             
             if (i == 0) { // Respiratory sensor
                 int32_t moving_avg_breath = moving_average_filter_breath(&prev_val_moving_avg_breath, val_mv);
