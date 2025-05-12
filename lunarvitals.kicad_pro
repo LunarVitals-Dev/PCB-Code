@@ -505,6 +505,10 @@
       {
         "netclass": "Power",
         "pattern": "/B-"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "/VSwitch"
       }
     ]
   },
