@@ -2945,6 +2945,151 @@
 				)
 			)
 		)
+		(symbol "Jumper:Jumper_2_Small_Bridged"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0) hide)
+			(exclude_from_sim yes)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "JP"
+				(at 0 2.032 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Jumper_2_Small_Bridged"
+				(at 0 -2.286 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Jumper, 2-pole, small symbol, bridged"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "Jumper SPST"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Jumper* TestPoint*2Pads* TestPoint*Bridge*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Jumper_2_Small_Bridged_0_0"
+				(circle
+					(center -1.016 0)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 1.016 0)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Jumper_2_Small_Bridged_0_1"
+				(arc
+					(start 0.762 0.254)
+					(mid 0 0.5696)
+					(end -0.762 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Jumper_2_Small_Bridged_1_1"
+				(pin passive line
+					(at -2.54 0 0)
+					(length 1.27)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 0 180)
+					(length 1.27)
+					(name "B"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Jumper:Jumper_2_Small_Open"
 			(pin_numbers hide)
 			(pin_names
@@ -4944,6 +5089,12 @@
 		(uuid "1e8e0fc3-5ef4-4e08-9982-51a0cd25fc9a")
 	)
 	(junction
+		(at 22.86 100.33)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "203f51d2-d180-464c-8d0c-29ba468bce4b")
+	)
+	(junction
 		(at 64.77 73.66)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5769,6 +5920,16 @@
 	)
 	(wire
 		(pts
+			(xy 160.02 40.64) (xy 161.29 40.64)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9188192b-ca30-409d-b256-40f4266a7750")
+	)
+	(wire
+		(pts
 			(xy 154.94 35.56) (xy 153.67 35.56)
 		)
 		(stroke
@@ -5989,6 +6150,16 @@
 	)
 	(wire
 		(pts
+			(xy 22.86 97.79) (xy 22.86 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c9667757-3b89-4db8-9e93-81d355f912c1")
+	)
+	(wire
+		(pts
 			(xy 86.36 165.1) (xy 91.44 165.1)
 		)
 		(stroke
@@ -6009,7 +6180,7 @@
 	)
 	(wire
 		(pts
-			(xy 153.67 40.64) (xy 160.02 40.64)
+			(xy 153.67 40.64) (xy 154.94 40.64)
 		)
 		(stroke
 			(width 0)
@@ -6285,7 +6456,7 @@
 	)
 	(text "BOut+ [3.7V-4.2V] gets converted to 3.3V"
 		(exclude_from_sim no)
-		(at 36.83 93.218 0)
+		(at 60.452 93.218 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6619,9 +6790,9 @@
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "010131f1-d457-486a-a47b-899f6a2b1030")
 		(property "Reference" "R2"
 			(at 53.34 59.69 90)
@@ -6818,7 +6989,7 @@
 		(at 134.62 149.86 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -6889,9 +7060,9 @@
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "149088b8-4875-4166-ad29-082525b976b5")
 		(property "Reference" "R11"
 			(at 53.34 82.55 90)
@@ -7163,7 +7334,7 @@
 		(at 40.64 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -8827,9 +8998,9 @@
 		(at 53.34 73.66 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "5065649f-36f7-4cce-a553-00f479f9cc18")
 		(property "Reference" "R6"
@@ -9017,6 +9188,72 @@
 			(project "lunarvitals"
 				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
 					(reference "#PWR017")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 22.86 92.71 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "595d281f-44e5-43ae-862e-58445f9a3465")
+		(property "Reference" "#PWR032"
+			(at 22.86 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 22.86 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 22.86 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 22.86 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 22.86 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cee648da-7b3f-42ac-a43e-7bb985aab374")
+		)
+		(instances
+			(project "lunarvitals"
+				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
+					(reference "#PWR032")
 					(unit 1)
 				)
 			)
@@ -9329,9 +9566,9 @@
 		(at 53.34 50.8 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "6efe4700-00d3-4daf-af48-2a811830077e")
 		(property "Reference" "R1"
@@ -10264,6 +10501,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Jumper:Jumper_2_Small_Open")
+		(at 22.86 95.25 90)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "97144b51-9158-4d93-bac3-af207e23cb27")
+		(property "Reference" "JP2"
+			(at 16.51 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Jumper_2_Small_Open"
+			(at 19.05 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 22.86 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 22.86 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Jumper, 2-pole, small symbol, open"
+			(at 22.86 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "73b0fce5-eccd-4eee-8ca3-1ab6551eba77")
+		)
+		(pin "2"
+			(uuid "c87caa31-8868-4d87-9cdd-d18b3f31f051")
+		)
+		(instances
+			(project "lunarvitals"
+				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
+					(reference "JP2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Mechanical:MountingHole")
 		(at 50.8 139.7 0)
 		(unit 1)
@@ -10329,7 +10633,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 160.02 40.64 270)
+		(at 161.29 40.64 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10338,7 +10642,7 @@
 		(fields_autoplaced yes)
 		(uuid "a3fc49ce-6485-4284-bf98-533418eaf01d")
 		(property "Reference" "#PWR014"
-			(at 156.21 40.64 0)
+			(at 157.48 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10347,7 +10651,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 163.83 40.6399 90)
+			(at 165.1 40.6399 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10356,7 +10660,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 160.02 40.64 0)
+			(at 161.29 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10365,7 +10669,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 160.02 40.64 0)
+			(at 161.29 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10374,7 +10678,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 160.02 40.64 0)
+			(at 161.29 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10538,6 +10842,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Jumper:Jumper_2_Small_Bridged")
+		(at 157.48 40.64 0)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "a6ab7612-0d56-4fc8-81be-b8814f67b96a")
+		(property "Reference" "JP3"
+			(at 157.48 45.466 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Jumper_2_Small_Bridged"
+			(at 157.988 42.672 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm"
+			(at 157.48 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 157.48 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Jumper, 2-pole, small symbol, bridged"
+			(at 157.48 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b4f3e024-ce6a-41fd-8913-3e92dd98fe35")
+		)
+		(pin "2"
+			(uuid "3fd95305-bb4e-42ae-a37d-bd49aaa66143")
+		)
+		(instances
+			(project ""
+				(path "/5743f844-2fd9-4187-922b-f2fa73d8e73e"
+					(reference "JP3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 243.84 146.05 270)
 		(mirror x)
@@ -10619,7 +10990,7 @@
 		(at 146.05 105.41 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -10914,7 +11285,7 @@
 		(at 92.71 109.22 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -11904,7 +12275,7 @@
 		(at 157.48 35.56 0)
 		(unit 1)
 		(exclude_from_sim yes)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "ebee7792-6ec9-4f72-a699-28fc94db89f4")

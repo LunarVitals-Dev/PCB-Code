@@ -179,4 +179,6 @@ _autosave-*
 fp-info-cache
 ~*.lck
 \#auto_saved_files#
+
+/jlcpcb
 # Kicad 3D model files 
