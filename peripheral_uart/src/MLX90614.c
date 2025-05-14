@@ -67,40 +67,22 @@ void read_mlx90614_data(const struct device *i2c_dev)
     uint16_t object_raw  = 0;
     float    ambient_c   = 0.0f;
     float    object_c    = 0.0f;
-    char     message[128];
-    int      offset      = 0;
-
-    /* Start JSON */
-    memset(message, 0, sizeof(message));
-    offset += snprintf(message + offset,
-                       sizeof(message) - offset,
-                       "{");
 
     /* Ambient temperature */
     if (read_mlx90614_register(i2c_dev, MLX90614_TA, &ambient_raw) == 0) {
         ambient_c = ambient_raw * 0.02f - 273.15f;  // Convert to °C
-        offset += snprintf(message + offset,
-                           sizeof(message) - offset,
-                           "\"AmbientTemp\": {\"Celsius\": %.1f},",
-                           (double)ambient_c);
+        aggregator_add_float((double)ambient_c);
     } else {
-        printk("Failed to read MLX90614 ambient temperature\n");
+        printk("Failed to read MLX90614 data\n");
         return;
     }
 
     /* Object temperature */
     if (read_mlx90614_register(i2c_dev, MLX90614_TOBJ1, &object_raw) == 0) {
         object_c = object_raw * 0.02f - 273.15f;    // Convert to °C
-        offset += snprintf(message + offset,
-                           sizeof(message) - offset,
-                           "\"ObjectTemp\": {\"Celsius\": %.1f}",
-                           (double)object_c);
+        aggregator_add_float((double)object_c);
     } else {
-        printk("Failed to read MLX90614 object temperature\n");
+        printk("Failed to read MLX90614 data\n");
         return;
     }
-
-    /* Close JSON and enqueue */
-    strncat(message, "}", sizeof(message) - strlen(message) - 1);
-    aggregator_add_data(message);
 }

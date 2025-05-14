@@ -243,7 +243,6 @@ int main(void)
 
     configure_gpio();
     configure_leds();
-	printk("version 1.0\n");
 	//------------bluetooth---------------
 	err = bt_enable(NULL);
     if (err) {
@@ -256,7 +255,6 @@ int main(void)
 	// printk("UUID (16-bit): 0x%04X\n", BT_UUID_GATT_STRING_VAL);
 	//------------bluetooth---------------
 	int64_t last_send = k_uptime_get();
-	aggregator_init();
 	//----------------------
 	/* Verify ADC readiness */
     adc_init();
@@ -269,10 +267,16 @@ int main(void)
 	
 		dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 
+		aggregator_init();
+
 		if(collect_data){
 			i2c_read_data();
 			get_adc_data();
-			max30102_read_data_spo2(&dev_max30102);
+			if (!d_i2c_is_ready(&dev_max30102)) {
+				printk("MAX30102 not ready\n");
+			} else {
+				max30102_read_data_spo2(&dev_max30102);
+    		}
 		}
 
 		int64_t now = k_uptime_get();

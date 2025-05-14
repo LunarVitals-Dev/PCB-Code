@@ -33,9 +33,8 @@ uint64_t last_bpm_calc_time = 0;
 
 // -------- Filtering Respiratory---------------------------------------------
 
-// -------- Filtering Respiratory---------------------------------------------
-#define BREATHING_THRESHOLD            7   
-#define MAX_PEAKS_BREATH               20     
+// -------- Filtering Respiratory---------------------------------------------   
+#define MAX_PEAKS_BREATH               15     
 #define MIN_PEAK_INTERVAL_MS_BREATH    1000   
 #define BREATH_WINDOW_MS               20000  
 #define MOVING_AVERAGE_WINDOW          5
@@ -45,7 +44,6 @@ bool rising_breath = false;
 uint32_t last_peak_time_breath = 0;
 uint32_t peak_timestamps_breath[MAX_PEAKS_BREATH];
 int peak_index_breath = 0;
-uint32_t BRPM = 0;
 
 /* Moving Average Filter */
 int32_t moving_average_filter_breath(int32_t *buffer, int32_t new_sample) {
@@ -64,7 +62,7 @@ int32_t moving_average_filter_breath(int32_t *buffer, int32_t new_sample) {
 bool detect_peak_breath(int32_t current_value, int32_t prev_value, bool *rising) {
     if (*rising && current_value < prev_value) {
         *rising = false;
-    } else if (!*rising && current_value > prev_value + BREATHING_THRESHOLD) {
+    } else if (!*rising && current_value > prev_value + 7) {
         *rising = true;
         return true;
     }
@@ -80,7 +78,8 @@ uint32_t calculate_breathing_rate_windowed(void) {
     uint32_t now = k_uptime_get();
     int count = 0;
     for (int i = 0; i < MAX_PEAKS_BREATH; i++) {
-        if (now - peak_timestamps_breath[i] <= BREATH_WINDOW_MS) {
+        uint32_t t = peak_timestamps_breath[i];
+        if ((now - t) <= BREATH_WINDOW_MS) {
             count++;
         }
     }
@@ -117,14 +116,6 @@ void adc_init(){
 }
 
 void get_adc_data() {
-    char message[256];
-    int message_offset = 0;  
-
-    memset(message, 0, sizeof(message));
-
-    // Add start marker for the JSON object
-    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
-
     for (int i = 0; i < NUMOFADCCHANNELS; i++) {
         const struct adc_dt_spec *adc_channel = &adc_channels[i];
 
@@ -136,6 +127,7 @@ void get_adc_data() {
             printk("ADC read failed for channel %d (%d)\n", i, err1);
         } else {
             // Convert the raw value to millivolts
+            int32_t BRPM = 0;
             int32_t val_mv = convert_to_mv(buf);
             
             if (i == 0) { // Respiratory sensor
@@ -152,11 +144,8 @@ void get_adc_data() {
 
                 BRPM = calculate_breathing_rate_windowed();
 
-                message_offset += snprintf(
-                    message + message_offset, sizeof(message) - message_offset,
-                    "\"RespRate\": {\"avg_mV\": %d, \"BRPM\": %d},",
-                    moving_avg_breath, BRPM
-                );
+                aggregator_add_int(moving_avg_breath);
+                aggregator_add_int(BRPM);
 
             } else if (i == 1) {// Pulse Sensor
                 uint64_t now = k_uptime_get(); 
@@ -183,19 +172,9 @@ void get_adc_data() {
                     last_bpm_calc_time = now;
                 }
 
-                // Append to JSON message
-                message_offset += snprintf(
-                    message + message_offset, sizeof(message) - message_offset,
-                    "\"PulseSensor\": {\"Value_mV\": %d, \"pulse_BPM\": %d}",
-                    val_mv, bpm_exp
-                );
+                aggregator_add_int(val_mv);
+                aggregator_add_int(bpm_exp);
             }
         }
     }
-
-    // Close the JSON object.
-    strncat(message, "}", sizeof(message) - strlen(message) - 1);
-  
-    // Instead of sending immediately, add this sensor's message to the aggregator.
-    aggregator_add_data(message);
 }

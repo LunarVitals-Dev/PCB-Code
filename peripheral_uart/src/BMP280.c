@@ -56,10 +56,6 @@ void bmp280_init(const struct device *i2c_dev) {
 
 void read_bmp280_data(const struct device *i2c_dev) {
     uint8_t data[6];
-    char message[64];
-    int message_offset = 0;
-
-    memset(message, 0, sizeof(message));
 
     if (i2c_read_registers(i2c_dev, BMP280_ADDR, BMP280_REG_PRESSURE_MSB, data, sizeof(data)) != 0) {
         printk("Failed to read BMP280 data\n");
@@ -93,22 +89,6 @@ void read_bmp280_data(const struct device *i2c_dev) {
 
     float pressure = (float)p / 25600;  // Convert to hPa
 
-    // Create JSON message
-    message_offset += snprintf(message + message_offset, sizeof(message) - message_offset, "{");
-    // message_offset += snprintf(
-    //     message + message_offset, sizeof(message) - message_offset,
-    //     "\"BMP_Temperature\": {\"Celsius\": %.2f},",
-    //     (double)celsius
-    // );
-    message_offset += snprintf(
-        message + message_offset, sizeof(message) - message_offset,
-        "\"Pressure\": {\"hPa\": %.1f}",
-        (double)(pressure)
-    );
+    aggregator_add_float((double)pressure);
 
-    // Close the JSON object.
-    strncat(message, "}", sizeof(message) - strlen(message) - 1);
-  
-    // Instead of sending immediately, add this sensor's message to the aggregator.
-    aggregator_add_data(message);
 }

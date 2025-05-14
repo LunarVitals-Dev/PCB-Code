@@ -14,13 +14,6 @@ static const uint8_t MAX30102_LED2_PA            = 0x0D;
 static const uint8_t MAX30102_FIFO_WR_PTR        = 0x04;
 static const uint8_t MAX30102_FIFO_O_CNTR        = 0x05;
 static const uint8_t MAX30102_FIFO_RD_PTR        = 0x06;
-#define RATE_SIZE 4 //Increase this for more averaging. 4 is good.
-uint8_t rates[RATE_SIZE]; //Array of heart rates
-uint8_t rateSpot = 0;
-long lastBeat = 0; //Time at which the last beat occurred
-
-float beatsPerMinute = 0;
-int beatAvg = 0;
 
 static sensor_struct sensor_data;
 
@@ -98,7 +91,7 @@ void max30102_pulse_oximeter_setup(const struct i2c_dt_spec *dev_max30102, uint8
 	//mode = multi led // 0_0_xxx_111
 	//mode = sp02 // 0_0_xxx_011
 	address = MAX30102_MODE_CONFIG;
-	data = mode & 0x03; // 0_0_000_111 
+	data = mode & 0x03; 
 	d_i2c_write_to_reg(dev_max30102, address, data);
 
 	//adc range = 16384, sample rate = 50, pulse width = 69 // x11_000_00
@@ -199,6 +192,11 @@ int max30102_check(const struct i2c_dt_spec *dev_max30102)
 
 	uint8_t data[6];
 	ret = d_i2c_read_registers(dev_max30102, 0x07, data, 6);
+
+	if (!ret) {
+        return -1;
+    }
+
 	if (ret == true){ 
 		sensor_data.head_ptr ++;
 		sensor_data.head_ptr %= DATA_BUFFER_SIZE;	
@@ -255,10 +253,15 @@ void max30102_read_data_spo2(const struct i2c_dt_spec * dev_max30102)
 {
 	for(int i = 0; i < bufferLength; i++)
 	{
-		while(max30102_available() == 0) max30102_check(dev_max30102);
+		while(max30102_available() == 0) {
+			if (max30102_check(dev_max30102) < 0) {
+            	printk("Failed to read MAX30102 data\n");
+            	return;  
+       		}
+		}
 
-		redBuffer[i] = sensor_data.red[sensor_data.head_ptr];
-		irBuffer[i] = sensor_data.ir[sensor_data.head_ptr];
+		redBuffer[i] = sensor_data.red[sensor_data.tail_ptr];
+		irBuffer[i] = sensor_data.ir[sensor_data.tail_ptr];
 		max30102_next_sample();
 
 		// printk(">red=%d, ir=%d\n", redBuffer[i], irBuffer[i]);
@@ -271,19 +274,5 @@ void max30102_read_data_spo2(const struct i2c_dt_spec * dev_max30102)
 		spo2 = 0;
 	}
 
-	char message[64];
-	int offset = 0;  
-
-    /* Start JSON */
-    memset(message, 0, sizeof(message));
-    offset += snprintf(message + offset, sizeof(message) - offset, "{");
-
-	offset += snprintf(message + offset,
-		sizeof(message) - offset,
-		"\"SPO2_Sensor\": {\"SPO2\": %d}",	
-		spo2);
-
-    /* Close JSON and enqueue */
-    strncat(message, "}", sizeof(message) - strlen(message) - 1);
-    aggregator_add_data(message);
+	aggregator_add_int(spo2);
 }

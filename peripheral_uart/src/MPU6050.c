@@ -14,13 +14,13 @@
 #define MAX_STEP_HISTORY   200       /* Number of recent step timestamps to keep */
 #define STEP_WINDOW_MS     20000    /* Time window (ms) for rate calculation */
 #define STEP_DEBOUNCE_MS   400      /* Minimum interval (ms) between steps */
-#define STEP_THRESHOLD     0.4f     /* Minimum change in vector magnitude to count a step */  
+#define STEP_THRESHOLD     0.38f     /* Minimum change in vector magnitude to count a step */  
 
 /* GYROSCOPE */
 #define MAX_GYRO_HISTORY   200     /* how many rotation events to remember */
 #define GYRO_WINDOW_MS     20000    /* same window as steps */
 #define GYRO_DEBOUNCE_MS   400     /* Minimum interval (ms) between rotations */
-#define GYRO_THRESHOLD     80.0f    /* deg/s change needed to count a “swing” */
+#define GYRO_THRESHOLD     70.0f    /* deg/s change needed to count a “swing” */
 
 /* Step counter state */
 typedef struct {
@@ -166,18 +166,10 @@ void read_mpu6050_data(const struct device *i2c_dev)
 {
     int16_t accel_raw[3], gyro_raw[3];
     uint8_t buf[6];
-    char message[256];
-    int  offset = 0;
-
-    /* Start JSON */
-    memset(message, 0, sizeof(message));
-    offset += snprintf(message + offset,
-                       sizeof(message) - offset,
-                       "{");
 
     /* Read accelerometer registers */
     if (i2c_read_registers(i2c_dev, MPU6050_ADDR, ACCEL_XOUT_H, buf, 6) != 0) {
-        printk("Failed to read accelerometer data\n");
+        printk("Failed to read MPU6050 data\n");
         return;
     }
     accel_raw[0] = (int16_t)((buf[0] << 8) | buf[1]);
@@ -194,19 +186,14 @@ void read_mpu6050_data(const struct device *i2c_dev)
     );
     float step_rate = calculate_step_rate();
 
-    offset += snprintf(message + offset,
-                       sizeof(message) - offset,
-                       "\"Accel\": {"
-                       "\"X_g\": %.1f, \"Y_g\": %.1f, \"Z_g\": %.1f, \"s_rate\": %.0f},",
-                       (double)step_counter.accel_x,
-                       (double)step_counter.accel_y,
-                       (double)step_counter.accel_z,
-                       (double)step_rate
-    );
+    aggregator_add_float(step_counter.accel_x);
+    aggregator_add_float(step_counter.accel_y);
+    aggregator_add_float(step_counter.accel_z);
+    aggregator_add_int(step_rate);
 
     /* Read gyroscope registers */
     if (i2c_read_registers(i2c_dev, MPU6050_ADDR, GYRO_XOUT_H, buf, 6) != 0) {
-        printk("Failed to read gyroscope data\n");
+        printk("Failed to read MPU6050 data\n");
         return;
     }
     gyro_raw[0] = (int16_t)((buf[0] << 8) | buf[1]);
@@ -223,18 +210,8 @@ void read_mpu6050_data(const struct device *i2c_dev)
     );
     float rotation_rate = calculate_rotation_rate();
 
-    offset += snprintf(message + offset,
-                       sizeof(message) - offset,
-                       "\"Gyro\": {"
-                       "\"X_deg\": %.1f, \"Y_deg\": %.1f, \"Z_deg\": %.1f, \"r_rate\": %.0f}"
-                       ,
-                       (double)step_counter.gyro_x,
-                       (double)step_counter.gyro_y,
-                       (double)step_counter.gyro_z,
-                       (double)rotation_rate
-    );
-
-    /* Close JSON and send */
-    offset += snprintf(message + offset, sizeof(message) - offset, "}");
-    aggregator_add_data(message);
+    aggregator_add_float(step_counter.gyro_x);
+    aggregator_add_float(step_counter.gyro_y);
+    aggregator_add_float(step_counter.gyro_z);
+    aggregator_add_int(rotation_rate);
 }
