@@ -9786,7 +9786,7 @@
 				)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_Kingbright_KPA-3010_3x2x1mm"
+		(property "Footprint" "lunar_vitals_custom:LED_Kingbright_APBA3010SURKCGKC-GX_3x2x1mm"
 			(at 241.3 96.52 0)
 			(effects
 				(font
