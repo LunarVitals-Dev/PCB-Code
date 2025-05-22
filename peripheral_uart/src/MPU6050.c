@@ -32,8 +32,8 @@ typedef struct {
     int      step_history_index;               /* Next write index in buffer */
     uint32_t step_count;                       /* Total step count for last window (unused) */
     uint32_t rate;                             /* Steps per minute */
-    uint32_t window_start_time;                /* Unused */
-    uint32_t last_activity_time;               /* Unused */
+    uint32_t window_start_time;                /* Start time of current window */
+    uint32_t last_activity_time;               /* Last time we detected activity */
 
     float    prev_gyro_mag;                    /* last gyro‐vector magnitude */
     uint32_t last_gyro_time;                   /* last time we counted a rotation */

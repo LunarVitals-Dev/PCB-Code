@@ -3,6 +3,9 @@
         "${workspaceFolder}\\peripheral_uart"
     ],
     "files.associations": {
-        "aggregator.h": "c"
+        "aggregator.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c"
     }
 }

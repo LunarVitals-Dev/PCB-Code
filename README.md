@@ -35,8 +35,8 @@ This project utilizes the Nordic nRF52840 and various sensors for data collectio
 4. **MAX30102 (Heart Rate & Blood Oxygen Sensor)**  
    - [Datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/max30102.pdf)  
    - **Connections:**
-     - SDA -> P1.10
-     - SCL -> P1.15
+     - SDA -> P0.13
+     - SCL -> P0.15
      - VDD -> VDD
      - GND -> GND
 
