@@ -170,6 +170,14 @@ void read_mpu6050_data(const struct device *i2c_dev)
     /* Read accelerometer registers */
     if (i2c_read_registers(i2c_dev, MPU6050_ADDR, ACCEL_XOUT_H, buf, 6) != 0) {
         printk("Failed to read MPU6050 data\n");
+        aggregator_add_float(0.0f);
+        aggregator_add_float(0.0f);
+        aggregator_add_float(0.0f);
+        aggregator_add_int(0.0f);
+        aggregator_add_float(0.0f);
+        aggregator_add_float(0.0f);
+        aggregator_add_float(0.0f);
+        aggregator_add_int(0.0f);
         return;
     }
     accel_raw[0] = (int16_t)((buf[0] << 8) | buf[1]);
@@ -191,11 +199,6 @@ void read_mpu6050_data(const struct device *i2c_dev)
     aggregator_add_float(step_counter.accel_z);
     aggregator_add_int(step_rate);
 
-    /* Read gyroscope registers */
-    if (i2c_read_registers(i2c_dev, MPU6050_ADDR, GYRO_XOUT_H, buf, 6) != 0) {
-        printk("Failed to read MPU6050 data\n");
-        return;
-    }
     gyro_raw[0] = (int16_t)((buf[0] << 8) | buf[1]);
     gyro_raw[1] = (int16_t)((buf[2] << 8) | buf[3]);
     gyro_raw[2] = (int16_t)((buf[4] << 8) | buf[5]);

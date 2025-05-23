@@ -7,21 +7,65 @@
 #include <zephyr/sys/printk.h>
 #include <zephyr/kernel.h>
 
+static K_MUTEX_DEFINE(i2c0_mutex);
+
 const struct device *i2c_dev0 = DEVICE_DT_GET(DT_NODELABEL(i2c0));
 const struct device *i2c_dev1 = DEVICE_DT_GET(DT_NODELABEL(i2c1));
 
-int i2c_write_register(const struct device *i2c_dev, uint8_t dev_addr, uint8_t reg_addr, uint8_t data) {
-    uint8_t buffer[2] = {reg_addr, data};
-    return i2c_write(i2c_dev, buffer, sizeof(buffer), dev_addr);
+//---------------------------------------------------------
+static inline void lock_if_i2c0(const struct device *dev)
+{
+    if (dev == i2c_dev0) {              
+        k_mutex_lock(&i2c0_mutex, K_FOREVER); 
+    }
 }
 
-int i2c_read_register(const struct device *i2c_dev, uint8_t dev_addr, uint8_t reg_addr, uint8_t *data) {
-    return i2c_write_read(i2c_dev, dev_addr, &reg_addr, 1, data, 1);
+static inline void unlock_if_i2c0(const struct device *dev)
+{
+    if (dev == i2c_dev0) {
+        k_mutex_unlock(&i2c0_mutex);
+    }
 }
 
-int i2c_read_registers(const struct device *i2c_dev, uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, size_t len) {
-    return i2c_write_read(i2c_dev, dev_addr, &reg_addr, 1, data, len);
+static inline void lock_if_i2c0_dt(const struct i2c_dt_spec *spec)
+{
+    lock_if_i2c0(spec->bus);
 }
+
+static inline void unlock_if_i2c0_dt(const struct i2c_dt_spec *spec)
+{
+    unlock_if_i2c0(spec->bus);
+}
+
+int i2c_write_register(const struct device *i2c_dev,
+                       uint8_t dev_addr, uint8_t reg_addr, uint8_t data)
+{
+    uint8_t buf[2] = { reg_addr, data };
+    lock_if_i2c0(i2c_dev);
+    int ret = i2c_write(i2c_dev, buf, sizeof(buf), dev_addr);
+    unlock_if_i2c0(i2c_dev);
+    return ret;
+}
+
+int i2c_read_register(const struct device *i2c_dev,
+                      uint8_t dev_addr, uint8_t reg_addr, uint8_t *data)
+{
+    lock_if_i2c0(i2c_dev);
+    int ret = i2c_write_read(i2c_dev, dev_addr, &reg_addr, 1, data, 1);
+    unlock_if_i2c0(i2c_dev);
+    return ret;
+}
+
+int i2c_read_registers(const struct device *i2c_dev,
+                       uint8_t dev_addr, uint8_t reg_addr,
+                       uint8_t *data, size_t len)
+{
+    lock_if_i2c0(i2c_dev);
+    int ret = i2c_write_read(i2c_dev, dev_addr, &reg_addr, 1, data, len);
+    unlock_if_i2c0(i2c_dev);
+    return ret;
+}
+
 
 void i2c_init(void) {
     if (!device_is_ready(i2c_dev0)) {
@@ -54,43 +98,53 @@ bool d_i2c_is_ready(const struct i2c_dt_spec *i2c_dev) {
     }
 }
 
-bool d_i2c_write_to_reg(const struct i2c_dt_spec *i2c_dev, uint8_t address, uint8_t data)
+bool d_i2c_write_to_reg(const struct i2c_dt_spec *spec,
+                        uint8_t address, uint8_t data)
 {
-	int ret;
-	ret = i2c_reg_write_byte_dt(i2c_dev, address, data);
-	if (ret < 0) {
-		printk("Failed to write byte %x to register %x\n", data, address);
-		return false;
-	} else {
-		if(REPORT_SUCCESS) printk("Wrote byte %2x to register %2x\n", data, address);
-		return true;
-	}
-}
+    lock_if_i2c0_dt(spec);
+    int ret = i2c_reg_write_byte_dt(spec, address, data);
+    unlock_if_i2c0_dt(spec);
 
-bool d_i2c_read_register(const struct i2c_dt_spec *i2c_dev, uint8_t reg_addr, uint8_t *data) {
-    int ret = i2c_write_read_dt(i2c_dev, &reg_addr, 1, data, 1);
     if (ret < 0) {
-        //printk("Failed to read register %x\n", reg_addr);
+        printk("Failed to write byte %x to register %x\n", data, address);
         return false;
-    } else {
-        if(REPORT_SUCCESS) printk("Read register %x\n", reg_addr);
-        return true;
     }
+    if (REPORT_SUCCESS) printk("Wrote byte %2x to register %2x\n", data, address);
+    return true;
 }
 
-bool d_i2c_read_registers(const struct i2c_dt_spec *i2c_dev, uint8_t reg_addr, uint8_t *data, size_t len) {
-    int ret = i2c_write_read_dt(i2c_dev, &reg_addr, 1, data, len);
-    if (ret < 0) { 
-        //printk("Failed to read %d registers starting from %x\n", len, reg_addr);
+bool d_i2c_read_register(const struct i2c_dt_spec *spec,
+                         uint8_t reg_addr, uint8_t *data)
+{
+    lock_if_i2c0_dt(spec);
+    int ret = i2c_write_read_dt(spec, &reg_addr, 1, data, 1);
+    unlock_if_i2c0_dt(spec);
+
+    if (ret < 0) {
         return false;
-    } else {
-        if(REPORT_SUCCESS) printk("Read %d registers starting from %x\n", len, reg_addr);
-        return true;
     }
+    if (REPORT_SUCCESS) printk("Read register %x\n", reg_addr);
+    return true;
 }
 
-bool d_i2c_read(const struct i2c_dt_spec *i2c_dev, uint8_t *data, size_t len) {
-    int ret = i2c_read_dt(i2c_dev, data, len);
+bool d_i2c_read_registers(const struct i2c_dt_spec *spec,
+                          uint8_t reg_addr, uint8_t *data, size_t len)
+{
+    lock_if_i2c0_dt(spec);
+    int ret = i2c_write_read_dt(spec, &reg_addr, 1, data, len);
+    unlock_if_i2c0_dt(spec);
+
+    if (ret < 0) {
+        return false;
+    }
+    if (REPORT_SUCCESS) printk("Read %d registers starting from %x\n", len, reg_addr);
+    return true;
+}
+
+bool d_i2c_read(const struct i2c_dt_spec *spec, uint8_t *data, size_t len) {
+    lock_if_i2c0_dt(spec);
+    int ret = i2c_read_dt(spec, data, len);
+    unlock_if_i2c0_dt(spec);
     if (ret < 0) {
         printk("Failed to read %d bytes\n", len);
         return false;
@@ -100,8 +154,10 @@ bool d_i2c_read(const struct i2c_dt_spec *i2c_dev, uint8_t *data, size_t len) {
     }
 }
 
-bool d_i2c_write(const struct i2c_dt_spec *i2c_dev, const uint8_t *data, size_t len) {
-    int ret = i2c_write_dt(i2c_dev, data, len);
+bool d_i2c_write(const struct i2c_dt_spec *spec, const uint8_t *data, size_t len) {
+    lock_if_i2c0_dt(spec);
+    int ret = i2c_write_dt(spec, data, len);
+    unlock_if_i2c0_dt(spec);
     if (ret < 0) {
         printk("Failed to write %d bytes\n", len);
         return false;

@@ -83,6 +83,8 @@ void read_mlx90614_data(const struct device *i2c_dev)
         aggregator_add_float((double)object_c);
     } else {
         printk("Failed to read MLX90614 data\n");
+        aggregator_add_float(0.0f);
+        aggregator_add_float(0.0f);
         return;
     }
 }

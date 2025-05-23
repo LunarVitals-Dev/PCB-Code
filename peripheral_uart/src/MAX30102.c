@@ -256,6 +256,7 @@ void max30102_read_data_spo2(const struct i2c_dt_spec * dev_max30102)
 		while(max30102_available() == 0) {
 			if (max30102_check(dev_max30102) < 0) {
             	printk("Failed to read MAX30102 data\n");
+        		aggregator_add_int(0.0f);
             	return;  
        		}
 		}
