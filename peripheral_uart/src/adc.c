@@ -24,14 +24,12 @@ static struct adc_sequence sequence = {
 #define TIME_WINDOW_MS 20000
 
 bool peak_detected = false;
-int32_t threshold = 1610; 
+int32_t threshold = 1605; 
 uint16_t buffer_index = 0;
 uint16_t beat_count = 0;
 static int32_t prev_val_heart = 0;
 int32_t bpm_exp = 0;
 uint64_t last_bpm_calc_time = 0;
-
-// -------- Filtering Respiratory---------------------------------------------
 
 // -------- Filtering Respiratory---------------------------------------------   
 #define MAX_PEAKS_BREATH               15     
@@ -62,7 +60,7 @@ int32_t moving_average_filter_breath(int32_t *buffer, int32_t new_sample) {
 bool detect_peak_breath(int32_t current_value, int32_t prev_value, bool *rising) {
     if (*rising && current_value < prev_value) {
         *rising = false;
-    } else if (!*rising && current_value > prev_value + 7) {
+    } else if (!*rising && current_value > prev_value + 8) {
         *rising = true;
         return true;
     }
